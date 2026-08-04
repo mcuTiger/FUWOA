@@ -1,0 +1,10 @@
+<Project Sdk="WixToolset.Sdk">
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fuwoa.AddIn\Fuwoa.AddIn.csproj" />
+  </ItemGroup>
+</Project>

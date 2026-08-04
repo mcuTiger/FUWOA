@@ -1,0 +1,303 @@
+using Microsoft.Win32;
+using System.Collections.Generic;
+
+namespace Fuwoa.AddIn
+{
+    public enum Language
+    {
+        zh_CN, zh_TW, en,
+        de, fr, ru,
+        vi, th, id,
+        bo, ug, ja
+    }
+
+    public static class LanguageManager
+    {
+        private const string RegPath = @"SOFTWARE\Microsoft\Office\Excel\Addins\Fuwoa.AddIn";
+        private const string LangKey = "Language";
+
+        private static Language _current;
+        private static bool _loaded;
+
+        private static readonly Dictionary<Language, Dictionary<string, string>> Strings =
+            new Dictionary<Language, Dictionary<string, string>>
+        {
+            [Language.zh_CN] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "导出计数",
+                ["exportCountScreentip"] = "导出唯一值及出现次数",
+                ["exportCountSupertip"] = "选中某一列的标题单元格，点击将下方该列所有唯一值及其出现次数按降序导出到新工作表。",
+                ["dataTools"] = "数据工具",
+                ["about"] = "关于",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "语言",
+                ["langRestart"] = "语言已切换为简体中文，请重新启动 Excel 使变更生效。",
+                ["count"] = "计数",
+                ["column"] = "列",
+                ["noExcelApp"] = "无法获取 Excel 应用程序实例。",
+                ["selectOneCell"] = "请选中某一列的标题单元格（单个单元格）。",
+                ["noDataBelow"] = "该列标题下方没有数据。",
+                ["exportFailed"] = "导出计数失败",
+            },
+            [Language.zh_TW] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "匯出計數",
+                ["exportCountScreentip"] = "匯出唯一值及出現次數",
+                ["exportCountSupertip"] = "選取某一欄的標題儲存格，點擊將下方該欄所有唯一值及其出現次數按降序匯出到新工作表。",
+                ["dataTools"] = "資料工具",
+                ["about"] = "關於",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "語言",
+                ["langRestart"] = "語言已切換為繁體中文，請重新啟動 Excel 使變更生效。",
+                ["count"] = "計數",
+                ["column"] = "欄",
+                ["noExcelApp"] = "無法取得 Excel 應用程式執行個體。",
+                ["selectOneCell"] = "請選取某一欄的標題儲存格（單一儲存格）。",
+                ["noDataBelow"] = "該欄標題下方沒有資料。",
+                ["exportFailed"] = "匯出計數失敗",
+            },
+            [Language.en] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "Export Count",
+                ["exportCountScreentip"] = "Export unique values with counts",
+                ["exportCountSupertip"] = "Select a header cell in any column, then click to export all unique values and their occurrence counts to a new worksheet, sorted by count descending.",
+                ["dataTools"] = "Data Tools",
+                ["about"] = "About",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "Language",
+                ["langRestart"] = "Language switched to English. Please restart Excel for the change to take effect.",
+                ["count"] = "Count",
+                ["column"] = "Col",
+                ["noExcelApp"] = "Unable to get Excel application instance.",
+                ["selectOneCell"] = "Please select a single header cell in any column.",
+                ["noDataBelow"] = "No data found below the header cell.",
+                ["exportFailed"] = "Export Count Failed",
+            },
+            [Language.de] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "Zählung exportieren",
+                ["exportCountScreentip"] = "Eindeutige Werte mit Häufigkeit exportieren",
+                ["exportCountSupertip"] = "Wählen Sie eine Kopfzeile in einer beliebigen Spalte und klicken Sie dann, um alle eindeutigen Werte und deren Häufigkeit absteigend in ein neues Arbeitsblatt zu exportieren.",
+                ["dataTools"] = "Datentools",
+                ["about"] = "Über",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "Sprache",
+                ["langRestart"] = "Sprache auf Deutsch geändert. Bitte starten Sie Excel neu.",
+                ["count"] = "Anzahl",
+                ["column"] = "Spalte",
+                ["noExcelApp"] = "Excel-Anwendungsinstanz kann nicht abgerufen werden.",
+                ["selectOneCell"] = "Bitte wählen Sie eine einzelne Kopfzelle in einer Spalte.",
+                ["noDataBelow"] = "Keine Daten unterhalb der Kopfzelle gefunden.",
+                ["exportFailed"] = "Export fehlgeschlagen",
+            },
+            [Language.fr] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "Exporter le décompte",
+                ["exportCountScreentip"] = "Exporter les valeurs uniques avec leur occurrence",
+                ["exportCountSupertip"] = "Sélectionnez une cellule d'en-tête dans n'importe quelle colonne, puis cliquez pour exporter toutes les valeurs uniques et leur nombre d'occurrences dans une nouvelle feuille, triées par ordre décroissant.",
+                ["dataTools"] = "Outils de données",
+                ["about"] = "À propos",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "Langue",
+                ["langRestart"] = "Langue changée en français. Veuillez redémarrer Excel.",
+                ["count"] = "Nombre",
+                ["column"] = "Colonne",
+                ["noExcelApp"] = "Impossible d'obtenir l'instance de l'application Excel.",
+                ["selectOneCell"] = "Veuillez sélectionner une seule cellule d'en-tête.",
+                ["noDataBelow"] = "Aucune donnée sous la cellule d'en-tête.",
+                ["exportFailed"] = "Échec de l'exportation",
+            },
+            [Language.ru] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "Экспорт подсчёта",
+                ["exportCountScreentip"] = "Экспорт уникальных значений с количеством",
+                ["exportCountSupertip"] = "Выберите ячейку заголовка в любом столбце и нажмите, чтобы экспортировать все уникальные значения и их количество в новый лист, отсортированные по убыванию.",
+                ["dataTools"] = "Инструменты данных",
+                ["about"] = "О программе",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "Язык",
+                ["langRestart"] = "Язык изменён на русский. Перезапустите Excel.",
+                ["count"] = "Количество",
+                ["column"] = "Столбец",
+                ["noExcelApp"] = "Не удалось получить экземпляр приложения Excel.",
+                ["selectOneCell"] = "Выберите одну ячейку заголовка в столбце.",
+                ["noDataBelow"] = "Нет данных под ячейкой заголовка.",
+                ["exportFailed"] = "Ошибка экспорта",
+            },
+            [Language.vi] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "Xuất thống kê",
+                ["exportCountScreentip"] = "Xuất giá trị duy nhất kèm số lần xuất hiện",
+                ["exportCountSupertip"] = "Chọn một ô tiêu đề trong cột bất kỳ, sau đó nhấn để xuất tất cả giá trị duy nhất và số lần xuất hiện sang sheet mới, sắp xếp giảm dần.",
+                ["dataTools"] = "Công cụ dữ liệu",
+                ["about"] = "Giới thiệu",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "Ngôn ngữ",
+                ["langRestart"] = "Đã chuyển sang tiếng Việt. Vui lòng khởi động lại Excel.",
+                ["count"] = "Số lượng",
+                ["column"] = "Cột",
+                ["noExcelApp"] = "Không thể lấy phiên bản ứng dụng Excel.",
+                ["selectOneCell"] = "Vui lòng chọn một ô tiêu đề duy nhất trong cột.",
+                ["noDataBelow"] = "Không có dữ liệu bên dưới ô tiêu đề.",
+                ["exportFailed"] = "Xuất thất bại",
+            },
+            [Language.th] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "ส่งออกจำนวน",
+                ["exportCountScreentip"] = "ส่งออกค่าที่ไม่ซ้ำพร้อมจำนวน",
+                ["exportCountSupertip"] = "เลือกเซลล์ส่วนหัวในคอลัมน์ใดก็ได้ จากนั้นคลิกเพื่อส่งออกค่าที่ไม่ซ้ำทั้งหมดและจำนวนที่ปรากฏไปยังแผ่นงานใหม่ โดยเรียงตามจำนวนจากมากไปน้อย",
+                ["dataTools"] = "เครื่องมือข้อมูล",
+                ["about"] = "เกี่ยวกับ",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "ภาษา",
+                ["langRestart"] = "เปลี่ยนภาษาเป็นภาษาไทยแล้ว กรุณารีสตาร์ท Excel",
+                ["count"] = "จำนวน",
+                ["column"] = "คอลัมน์",
+                ["noExcelApp"] = "ไม่สามารถเข้าถึงอินสแตนซ์ของแอปพลิเคชัน Excel",
+                ["selectOneCell"] = "โปรดเลือกเซลล์ส่วนหัวเพียงเซลล์เดียวในคอลัมน์",
+                ["noDataBelow"] = "ไม่พบข้อมูลใต้เซลล์ส่วนหัว",
+                ["exportFailed"] = "การส่งออกล้มเหลว",
+            },
+            [Language.id] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "Ekspor Hitungan",
+                ["exportCountScreentip"] = "Ekspor nilai unik dengan jumlah kemunculan",
+                ["exportCountSupertip"] = "Pilih sel judul di kolom mana pun, lalu klik untuk mengekspor semua nilai unik dan jumlah kemunculannya ke lembar kerja baru, diurutkan menurun.",
+                ["dataTools"] = "Alat Data",
+                ["about"] = "Tentang",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "Bahasa",
+                ["langRestart"] = "Bahasa diubah ke Bahasa Indonesia. Silakan mulai ulang Excel.",
+                ["count"] = "Jumlah",
+                ["column"] = "Kolom",
+                ["noExcelApp"] = "Tidak dapat mengakses instans aplikasi Excel.",
+                ["selectOneCell"] = "Silakan pilih satu sel judul di kolom.",
+                ["noDataBelow"] = "Tidak ada data di bawah sel judul.",
+                ["exportFailed"] = "Ekspor gagal",
+            },
+            [Language.bo] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "ཨང་གྲངས་ཕྱིར་འདོན།",
+                ["exportCountScreentip"] = "མ་འདྲ་བའི་གྲངས་ཀ་ཕྱིར་འདོན།",
+                ["exportCountSupertip"] = "ཚོགས་གྲངས་གང་ཡིན་རུང་མགོ་ཡིག་གི་དྲ་ཐིག་གཅིག་འདེམས་རོགས། རྗེས་སུ་མི་འདྲ་བའི་གྲངས་ཐང་ཚང་མ་དང་དེ་དག་གི་འབྱུང་གྲངས་གཤམ་འོག་ནས་གོང་འོག་ཏུ་སྒྲིག་སྟེ་བྱང་བུ་གསར་པར་ཕྱིར་འདོན་བྱེད།",
+                ["dataTools"] = "གཞི་གྲངས་ཡོ་བྱད།",
+                ["about"] = "སྐོར།",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "སྐད་ཡིག",
+                ["langRestart"] = "སྐད་ཡིག་བོད་སྐད་ལ་བསྒྱུར་ཟིན། ཡང་བསྐྱར་Excel བརྒྱུད་གཏོང་བྱེད་རོགས།",
+                ["count"] = "ཨང་གྲངས།",
+                ["column"] = "ཀ་རྟགས།",
+                ["noExcelApp"] = "Excel མཉེན་སྒྲིག་གི་དཔེ་མཚན་ལེན་མི་ཐུབ།",
+                ["selectOneCell"] = "ཀ་རྟགས་ཤིག་གི་མགོ་ཡིག་དྲ་ཐིག་གཅིག་རྐྱང་འདེམས་རོགས།",
+                ["noDataBelow"] = "མགོ་ཡིག་དྲ་ཐིག་གི་འོག་ཏུ་གཞི་གྲངས་མི་འདུག",
+                ["exportFailed"] = "ཕྱིར་འདོན་ལས་འཆར་མ་བྱུང་།",
+            },
+            [Language.ug] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "ساناق چىقىرىش",
+                ["exportCountScreentip"] = "تەكرارلانمىغان قىممەتلەرنى سانى بىلەن چىقىرىش",
+                ["exportCountSupertip"] = "ھەرقانداق ئىستوننىڭ ماۋزۇ كاتەكچىسىنى تاللاڭ، ئاندىن چېكىپ تەكرارلانمىغان بارلىق قىممەتلەر ۋە ئۇلارنىڭ پەيدا بولۇش سانىنى چۈشۈش تەرتىپى بويىچە يېڭى ۋاراققا چىقىرىڭ.",
+                ["dataTools"] = "سانلىق مەلۇمات قوراللىرى",
+                ["about"] = "ھەققىدە",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "تىل",
+                ["langRestart"] = "تىل ئۇيغۇرچىگە ئۆزگەرتىلدى. Excel نى قايتا باشلاڭ.",
+                ["count"] = "سان",
+                ["column"] = "ئىستون",
+                ["noExcelApp"] = "Excel پروگرامما ئىنستانسىغا ئېرىشەلمىدى.",
+                ["selectOneCell"] = "ئىستوندىكى بىر ماۋزۇ كاتەكچىنى تاللاڭ.",
+                ["noDataBelow"] = "ماۋزۇ كاتەكچىنىڭ ئاستىدا سانلىق مەلۇمات يوق.",
+                ["exportFailed"] = "ساناق چىقىرىش مەغلۇپ بولدى",
+            },
+            [Language.ja] = new Dictionary<string, string>
+            {
+                ["exportCount"] = "カウント出力",
+                ["exportCountScreentip"] = "ユニーク値と出現回数を出力",
+                ["exportCountSupertip"] = "任意の列のヘッダーセルを選択し、クリックするとその列のすべてのユニーク値と出現回数を降順で新しいシートに出力します。",
+                ["dataTools"] = "データツール",
+                ["about"] = "バージョン情報",
+                ["version"] = "FUWOA v1.0",
+                ["language"] = "言語",
+                ["langRestart"] = "言語を日本語に変更しました。Excel を再起動してください。",
+                ["count"] = "件数",
+                ["column"] = "列",
+                ["noExcelApp"] = "Excel アプリケーションのインスタンスを取得できません。",
+                ["selectOneCell"] = "列のヘッダーセルを1つ選択してください。",
+                ["noDataBelow"] = "ヘッダーセルの下にデータがありません。",
+                ["exportFailed"] = "カウント出力に失敗しました",
+            },
+        };
+
+        public static Language Current
+        {
+            get
+            {
+                if (!_loaded) Load();
+                return _current;
+            }
+        }
+
+        private static void Load()
+        {
+            _loaded = true;
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(RegPath);
+                string saved = key?.GetValue(LangKey) as string;
+                _current = saved switch
+                {
+                    "zh-TW" => Language.zh_TW,
+                    "en" => Language.en,
+                    "de" => Language.de,
+                    "fr" => Language.fr,
+                    "ru" => Language.ru,
+                    "vi" => Language.vi,
+                    "th" => Language.th,
+                    "id" => Language.id,
+                    "bo" => Language.bo,
+                    "ug" => Language.ug,
+                    "ja" => Language.ja,
+                    _ => Language.zh_CN
+                };
+            }
+            catch
+            {
+                _current = Language.zh_CN;
+            }
+        }
+
+        public static void SetLanguage(Language lang)
+        {
+            _current = lang;
+            try
+            {
+                using var key = Registry.CurrentUser.CreateSubKey(RegPath);
+                key.SetValue(LangKey, lang switch
+                {
+                    Language.zh_TW => "zh-TW",
+                    Language.en => "en",
+                    Language.de => "de",
+                    Language.fr => "fr",
+                    Language.ru => "ru",
+                    Language.vi => "vi",
+                    Language.th => "th",
+                    Language.id => "id",
+                    Language.bo => "bo",
+                    Language.ug => "ug",
+                    Language.ja => "ja",
+                    _ => "zh-CN"
+                });
+            }
+            catch { }
+        }
+
+        public static string Get(string key)
+        {
+            if (!_loaded) Load();
+            return Strings.TryGetValue(_current, out var dict) &&
+                   dict.TryGetValue(key, out var value)
+                ? value
+                : key;
+        }
+    }
+}

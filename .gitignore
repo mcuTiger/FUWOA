@@ -1,0 +1,32 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+*.dll
+*.exe
+*.tlb
+*.pdb
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.slnx
+*.sln.docstates
+
+# Strong name key (keep private)
+*.snk
+
+# NuGet
+packages/
+
+# Rider
+.idea/
+*.sln.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# WiX installer outputs
+*.msi
+*.wixpdb
