@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Extensibility;
 using Microsoft.Office.Core;
 using Excel = Microsoft.Office.Interop.Excel;
+using Fuwoa.Core.ExportCount;
 
 namespace Fuwoa.AddIn
 {
@@ -16,6 +17,73 @@ namespace Fuwoa.AddIn
         private object _applicationObject;
         private object _addInInstance;
         private IRibbonUI _ribbonUI;
+        private Timer _filterTimer;
+        private bool _lastFilterMode;
+        private static SortMode _sortMode;
+        private static bool _sortModeLoaded;
+        private static bool _sortDescending = true;
+        private static bool _sortDescLoaded;
+
+        private static SortMode SortMode
+        {
+            get
+            {
+                if (!_sortModeLoaded)
+                {
+                    _sortModeLoaded = true;
+                    try
+                    {
+                        using var key = Microsoft.Win32.Registry.CurrentUser
+                            .OpenSubKey(@"SOFTWARE\Microsoft\Office\Excel\Addins\Fuwoa.AddIn");
+                        _sortMode = (key?.GetValue("SortMode") as string) == "Title"
+                            ? SortMode.ByTitle : SortMode.ByCount;
+                    }
+                    catch { _sortMode = SortMode.ByCount; }
+                }
+                return _sortMode;
+            }
+            set
+            {
+                _sortMode = value;
+                try
+                {
+                    using var key = Microsoft.Win32.Registry.CurrentUser
+                        .CreateSubKey(@"SOFTWARE\Microsoft\Office\Excel\Addins\Fuwoa.AddIn");
+                    key.SetValue("SortMode", value == SortMode.ByTitle ? "Title" : "Count");
+                }
+                catch { }
+            }
+        }
+
+        private static bool SortDescending
+        {
+            get
+            {
+                if (!_sortDescLoaded)
+                {
+                    _sortDescLoaded = true;
+                    try
+                    {
+                        using var key = Microsoft.Win32.Registry.CurrentUser
+                            .OpenSubKey(@"SOFTWARE\Microsoft\Office\Excel\Addins\Fuwoa.AddIn");
+                        _sortDescending = (key?.GetValue("SortOrder") as string) != "Asc";
+                    }
+                    catch { _sortDescending = true; }
+                }
+                return _sortDescending;
+            }
+            set
+            {
+                _sortDescending = value;
+                try
+                {
+                    using var key = Microsoft.Win32.Registry.CurrentUser
+                        .CreateSubKey(@"SOFTWARE\Microsoft\Office\Excel\Addins\Fuwoa.AddIn");
+                    key.SetValue("SortOrder", value ? "Desc" : "Asc");
+                }
+                catch { }
+            }
+        }
 
         public void OnConnection(object application, ext_ConnectMode connectMode,
             object addInInst, ref Array custom)
@@ -26,13 +94,22 @@ namespace Fuwoa.AddIn
 
         public void OnDisconnection(ext_DisconnectMode removeMode, ref Array custom)
         {
+            StopFilterWatcher();
             _ribbonUI = null;
             _applicationObject = null;
         }
 
         public void OnAddInsUpdate(ref Array custom) { }
-        public void OnStartupComplete(ref Array custom) { }
-        public void OnBeginShutdown(ref Array custom) { }
+
+        public void OnStartupComplete(ref Array custom)
+        {
+            StartFilterWatcher();
+        }
+
+        public void OnBeginShutdown(ref Array custom)
+        {
+            StopFilterWatcher();
+        }
 
         public string GetCustomUI(string ribbonID)
         {
@@ -54,17 +131,39 @@ namespace Fuwoa.AddIn
             // Data Tools group
             xml.AppendLine($"        <group id=\"DataToolsGroup\" label=\"{E(dataTools)}\">");
             xml.AppendLine($"          <button id=\"ExportCountBtn\"");
-            xml.AppendLine($"                  label=\"{E(export)}\"");
+            xml.AppendLine( "                  getLabel=\"GetExportCountLabel\"");
             xml.AppendLine($"                  screentip=\"{E(screentip)}\"");
             xml.AppendLine($"                  supertip=\"{E(supertip)}\"");
             xml.AppendLine( "                  onAction=\"OnExportCountClick\"");
             xml.AppendLine( "                  imageMso=\"CreateReportFromWizard\"");
             xml.AppendLine( "                  size=\"large\"/>");
+            xml.AppendLine($"          <dropDown id=\"SortDropDown\"");
+            xml.AppendLine($"                    label=\"{E(L("sortBy"))}\"");
+            xml.AppendLine( "                    sizeString=\"WWWWWWWW\"");
+            xml.AppendLine( "                    getSelectedItemIndex=\"GetSortSelectedIndex\"");
+            xml.AppendLine( "                    onAction=\"OnSortDropDownAction\">");
+            xml.AppendLine($"            <item id=\"SortByCount\" label=\"{E(L("sortByCount"))}\"/>");
+            xml.AppendLine($"            <item id=\"SortByTitle\" label=\"{E(L("sortByTitle"))}\"/>");
+            xml.AppendLine( "          </dropDown>");
+            xml.AppendLine($"          <dropDown id=\"OrderDropDown\"");
+            xml.AppendLine($"                    label=\"{E(L("sortOrder"))}\"");
+            xml.AppendLine( "                    sizeString=\"WWWWWWWW\"");
+            xml.AppendLine( "                    getSelectedItemIndex=\"GetOrderSelectedIndex\"");
+            xml.AppendLine( "                    onAction=\"OnOrderDropDownAction\">");
+            xml.AppendLine($"            <item id=\"OrderDesc\" label=\"{E(L("sortDesc"))}\"/>");
+            xml.AppendLine($"            <item id=\"OrderAsc\"  label=\"{E(L("sortAsc"))}\"/>");
+            xml.AppendLine( "          </dropDown>");
             xml.AppendLine( "        </group>");
 
             // About group
             xml.AppendLine($"        <group id=\"AboutGroup\" label=\"{E(about)}\">");
             xml.AppendLine($"          <labelControl id=\"VersionLabel\" label=\"{E(version)}\"/>");
+            // Development / BETA mode tag (visible in debug builds, hidden in Release/MSI builds)
+#if !RELEASE
+            var devTag = L("devTag");
+            if (!string.IsNullOrEmpty(devTag))
+                xml.AppendLine($"          <labelControl id=\"DevTagLabel\" label=\"{E(devTag)}\"/>");
+#endif
 
             // Separator row: icon + label before dropdown
             xml.AppendLine( "          <box id=\"LangBox\" boxStyle=\"horizontal\">");
@@ -112,7 +211,51 @@ namespace Fuwoa.AddIn
         public void OnExportCountClick(IRibbonControl control)
         {
             var command = new Commands.ExportCountCommand();
-            command.Execute(_applicationObject as Excel.Application);
+            command.Execute(_applicationObject as Excel.Application, SortMode, SortDescending);
+        }
+
+        public string GetExportCountLabel(IRibbonControl control)
+        {
+            try
+            {
+                var app = _applicationObject as Excel.Application;
+                var sheet = app?.ActiveSheet as Excel.Worksheet;
+                if (sheet != null && sheet.AutoFilterMode)
+                {
+                    var filter = sheet.AutoFilter;
+                    if (filter != null && filter.FilterMode)
+                        return L("exportCountFiltered");
+                }
+            }
+            catch { }
+            return L("exportCountAll");
+        }
+
+        // ── Sort Dropdown ──
+
+        public int GetSortSelectedIndex(IRibbonControl c)
+        {
+            return SortMode == SortMode.ByTitle ? 1 : 0;
+        }
+
+        public void OnSortDropDownAction(IRibbonControl control,
+            string selectedId, int selectedIndex)
+        {
+            SortMode = selectedId == "SortByTitle"
+                ? SortMode.ByTitle : SortMode.ByCount;
+        }
+
+        // ── Order Dropdown ──
+
+        public int GetOrderSelectedIndex(IRibbonControl c)
+        {
+            return SortDescending ? 0 : 1;
+        }
+
+        public void OnOrderDropDownAction(IRibbonControl control,
+            string selectedId, int selectedIndex)
+        {
+            SortDescending = selectedId != "OrderAsc";
         }
 
         // ── Language Dropdown ──
@@ -192,6 +335,56 @@ namespace Fuwoa.AddIn
                     .Replace("<", "&lt;")
                     .Replace(">", "&gt;")
                     .Replace("'", "&apos;");
+        }
+
+        // ── Filter mode watcher for real-time label update ──
+
+        private void StartFilterWatcher()
+        {
+            try
+            {
+                _filterTimer = new Timer { Interval = 500 };
+                _filterTimer.Tick += (s, e) =>
+                {
+                    try
+                    {
+                        var app = _applicationObject as Excel.Application;
+                        var sheet = app?.ActiveSheet as Excel.Worksheet;
+                        bool current = sheet != null && sheet.AutoFilterMode &&
+                                       sheet.AutoFilter != null &&
+                                       sheet.AutoFilter.FilterMode;
+                        if (current != _lastFilterMode)
+                        {
+                            _lastFilterMode = current;
+                            _ribbonUI?.InvalidateControl("ExportCountBtn");
+                        }
+                    }
+                    catch { }
+                };
+                _filterTimer.Start();
+
+                // Also hook SheetActivate for sheet switches
+                var app2 = _applicationObject as Excel.Application;
+                if (app2 != null)
+                {
+                    app2.SheetActivate += (object sh) =>
+                    {
+                        _ribbonUI?.InvalidateControl("ExportCountBtn");
+                    };
+                }
+            }
+            catch { }
+        }
+
+        private void StopFilterWatcher()
+        {
+            try
+            {
+                _filterTimer?.Stop();
+                _filterTimer?.Dispose();
+                _filterTimer = null;
+            }
+            catch { }
         }
     }
 }

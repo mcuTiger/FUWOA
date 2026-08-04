@@ -10,7 +10,8 @@ namespace Fuwoa.AddIn.Commands
     /// </summary>
     public class ExportCountCommand
     {
-        public void Execute(Excel.Application app)
+        public void Execute(Excel.Application app, SortMode sortMode = SortMode.ByCount,
+            bool descending = true)
         {
             try
             {
@@ -63,17 +64,41 @@ namespace Fuwoa.AddIn.Commands
                 int dataStartRow = headerRow + 1;
                 int dataRowCount = lastRow - dataStartRow + 1;
 
+                // 检测筛选状态
+                bool isFiltered = sourceSheet.AutoFilterMode &&
+                                  sourceSheet.AutoFilter != null &&
+                                  sourceSheet.AutoFilter.FilterMode;
+
                 // 读取数据（用 Text 属性保留原始显示格式，避免 01-06 被截断）
-                string[] items = new string[dataRowCount];
-                for (int i = 0; i < dataRowCount; i++)
+                var items = new System.Collections.Generic.List<string>();
+                if (isFiltered)
                 {
-                    items[i] = sourceSheet.Cells[dataStartRow + i, columnIndex].Text?.ToString()
-                               ?? string.Empty;
+                    // 仅读取可见行
+                    var dataRange = sourceSheet.Range[
+                        sourceSheet.Cells[dataStartRow, columnIndex],
+                        sourceSheet.Cells[lastRow, columnIndex]];
+                    var visibleAreas = dataRange.SpecialCells(
+                        Excel.XlCellType.xlCellTypeVisible);
+                    foreach (Excel.Range area in visibleAreas.Areas)
+                    {
+                        foreach (Excel.Range cell in area.Cells)
+                        {
+                            items.Add(cell.Text?.ToString() ?? string.Empty);
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < dataRowCount; i++)
+                    {
+                        items.Add(sourceSheet.Cells[dataStartRow + i, columnIndex].Text?.ToString()
+                                   ?? string.Empty);
+                    }
                 }
 
                 // 调用核心服务
                 var service = new ExportCountService();
-                var result = service.Compute(items);
+                var result = service.Compute(items.ToArray(), sortMode, descending);
 
                 // 创建新工作表
                 Excel.Worksheet newSheet = (Excel.Worksheet)app.Worksheets.Add(
@@ -87,7 +112,32 @@ namespace Fuwoa.AddIn.Commands
                     .Replace("*", "").Replace("?", "").Replace(":", "：")
                     .Replace("\\", "-");
                 if (sheetName.Length > 31) sheetName = sheetName.Substring(0, 31);
-                newSheet.Name = sheetName;
+
+                // 重名时加序号后缀，避免覆盖用户已标注的旧表
+                string finalName = sheetName;
+                var existingNames = new System.Collections.Generic.HashSet<string>(
+                    StringComparer.OrdinalIgnoreCase);
+                foreach (Excel.Worksheet ws in app.Worksheets)
+                    existingNames.Add(ws.Name);
+
+                if (existingNames.Contains(sheetName))
+                {
+                    for (int n = 2; n <= 999; n++)
+                    {
+                        string suffix = string.Format(" ({0})", n);
+                        int suffixLen = suffix.Length;
+                        string candidate = sheetName;
+                        if (candidate.Length + suffixLen > 31)
+                            candidate = candidate.Substring(0, 31 - suffixLen);
+                        candidate += suffix;
+                        if (!existingNames.Contains(candidate))
+                        {
+                            finalName = candidate;
+                            break;
+                        }
+                    }
+                }
+                newSheet.Name = finalName;
 
                 // 设置 A 列为文本格式，防止 Excel 自动格式化（如 01-06 → 1-6）
                 newSheet.Range["A:A"].NumberFormat = "@";

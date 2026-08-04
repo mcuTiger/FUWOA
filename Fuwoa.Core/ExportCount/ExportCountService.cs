@@ -4,6 +4,15 @@ using System.Linq;
 namespace Fuwoa.Core.ExportCount
 {
     /// <summary>
+    /// 排序方式。
+    /// </summary>
+    public enum SortMode
+    {
+        ByCount,
+        ByTitle
+    }
+
+    /// <summary>
     /// 导出计数结果项。
     /// </summary>
     public class CountResultItem
@@ -14,25 +23,27 @@ namespace Fuwoa.Core.ExportCount
 
     /// <summary>
     /// 导出计数核心服务。
-    /// 输入字符串数组，输出按计数降序排列的唯一值列表。
     /// </summary>
     public class ExportCountService
     {
-        /// <summary>
-        /// 对输入数据进行分组计数，按计数降序排列。
-        /// </summary>
-        /// <param name="items">输入的字符串数组</param>
-        /// <returns>按计数降序排列的结果列表</returns>
-        public List<CountResultItem> Compute(string[] items)
+        public List<CountResultItem> Compute(string[] items, SortMode sortMode = SortMode.ByCount,
+            bool descending = true)
         {
             if (items == null || items.Length == 0)
                 return new List<CountResultItem>();
 
-            return items
+            var groups = items
                 .GroupBy(x => x)
-                .Select(g => new CountResultItem { Value = g.Key, Count = g.Count() })
-                .OrderByDescending(x => x.Count)
-                .ToList();
+                .Select(g => new CountResultItem { Value = g.Key, Count = g.Count() });
+
+            if (sortMode == SortMode.ByTitle)
+                return descending
+                    ? groups.OrderByDescending(x => x.Value).ToList()
+                    : groups.OrderBy(x => x.Value).ToList();
+            else
+                return descending
+                    ? groups.OrderByDescending(x => x.Count).ToList()
+                    : groups.OrderBy(x => x.Count).ToList();
         }
     }
 }
