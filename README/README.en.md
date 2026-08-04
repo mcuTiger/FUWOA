@@ -1,5 +1,7 @@
 # FUWOA
 
+[中文](../README.md)
+
 FUWOA is a practical utility add-in for Excel.
 
 ## Features

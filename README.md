@@ -1,5 +1,7 @@
 # FUWOA
 
+[English](README/README.en.md)
+
 FUWOA 是一款适用于 Excel 的实用小工具。
 
 ## 功能
@@ -27,3 +29,7 @@ FUWOA 是一款适用于 Excel 的实用小工具。
 ```sh
 msbuild FUWOA.sln /p:Configuration=Release /p:Platform=x64
 ```
+
+## 关于
+
+本项目由 AI Agent 撰写，使用 [GNU General Public License v3.0](LICENSE) 授权（开源，禁止闭源分发）。
