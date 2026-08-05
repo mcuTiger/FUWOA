@@ -47,6 +47,7 @@ namespace Fuwoa.AddIn
                 ["sortOrder"] = "方向",
                 ["sortDesc"] = "降序",
                 ["sortAsc"] = "升序",
+                ["visualTools"] = "视觉工具",
                 ["highlightToggle"] = "行列高亮",
                 ["highlightColor"] = "高亮颜色",
             },
@@ -191,6 +192,7 @@ namespace Fuwoa.AddIn
                 ["sortDesc"] = "По убыванию",
                 ["sortAsc"] = "По возрастанию",
                 ["highlightToggle"] = "Подсветка строк и столбцов",
+                ["visualTools"] = "Визуальные инструменты",
                 ["highlightColor"] = "Цвет подсветки"
             },
             [Language.vi] = new Dictionary<string, string>
