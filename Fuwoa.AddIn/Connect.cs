@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
@@ -23,6 +24,9 @@ namespace Fuwoa.AddIn
         private static bool _sortModeLoaded;
         private static bool _sortDescending = true;
         private static bool _sortDescLoaded;
+#if !RELEASE
+        private HighlightManager _highlightManager;
+#endif
 
         private static SortMode SortMode
         {
@@ -95,6 +99,9 @@ namespace Fuwoa.AddIn
         public void OnDisconnection(ext_DisconnectMode removeMode, ref Array custom)
         {
             StopFilterWatcher();
+#if !RELEASE
+            _highlightManager?.Disable();
+#endif
             _ribbonUI = null;
             _applicationObject = null;
         }
@@ -104,6 +111,9 @@ namespace Fuwoa.AddIn
         public void OnStartupComplete(ref Array custom)
         {
             StartFilterWatcher();
+#if !RELEASE
+            _highlightManager = new HighlightManager(_applicationObject as Excel.Application);
+#endif
         }
 
         public void OnBeginShutdown(ref Array custom)
@@ -139,7 +149,7 @@ namespace Fuwoa.AddIn
             xml.AppendLine( "                  size=\"large\"/>");
             xml.AppendLine($"          <dropDown id=\"SortDropDown\"");
             xml.AppendLine($"                    label=\"{E(L("sortBy"))}\"");
-            xml.AppendLine( "                    sizeString=\"WWWWWWWW\"");
+            xml.AppendLine( "                    sizeString=\"WWWWWWW\"");
             xml.AppendLine( "                    getSelectedItemIndex=\"GetSortSelectedIndex\"");
             xml.AppendLine( "                    onAction=\"OnSortDropDownAction\">");
             xml.AppendLine($"            <item id=\"SortByCount\" label=\"{E(L("sortByCount"))}\"/>");
@@ -147,7 +157,7 @@ namespace Fuwoa.AddIn
             xml.AppendLine( "          </dropDown>");
             xml.AppendLine($"          <dropDown id=\"OrderDropDown\"");
             xml.AppendLine($"                    label=\"{E(L("sortOrder"))}\"");
-            xml.AppendLine( "                    sizeString=\"WWWWWWWW\"");
+            xml.AppendLine( "                    sizeString=\"WWWWWWW\"");
             xml.AppendLine( "                    getSelectedItemIndex=\"GetOrderSelectedIndex\"");
             xml.AppendLine( "                    onAction=\"OnOrderDropDownAction\">");
             xml.AppendLine($"            <item id=\"OrderDesc\" label=\"{E(L("sortDesc"))}\"/>");
@@ -155,7 +165,27 @@ namespace Fuwoa.AddIn
             xml.AppendLine( "          </dropDown>");
             xml.AppendLine( "        </group>");
 
-            // About group
+#if !RELEASE
+            // Visual Tools group
+            xml.AppendLine($"        <group id=\"HighlightGroup\" label=\"{E(L("visualTools"))}\">");
+            xml.AppendLine($"          <toggleButton id=\"HighlightToggle\"");
+            xml.AppendLine( "                       getLabel=\"GetHighlightToggleLabel\"");
+            xml.AppendLine( "                       getPressed=\"GetHighlightTogglePressed\"");
+            xml.AppendLine( "                       onAction=\"OnHighlightToggleAction\"");
+            xml.AppendLine( "                       imageMso=\"TextHighlightColorPicker\"");
+            xml.AppendLine( "                       size=\"large\"/>");
+            xml.AppendLine($"          <gallery id=\"HighlightColorGallery\"");
+            xml.AppendLine( "                       getLabel=\"GetHighlightColorLabel\"");
+            xml.AppendLine( "                       getItemCount=\"GetHighlightColorItemCount\"");
+            xml.AppendLine( "                       getItemImage=\"GetHighlightColorItemImage\"");
+            xml.AppendLine( "                       onAction=\"OnHighlightColorAction\"");
+            xml.AppendLine( "                       columns=\"5\"");
+            xml.AppendLine( "                       itemWidth=\"20\"");
+            xml.AppendLine( "                       itemHeight=\"20\"/>");
+            xml.AppendLine( "        </group>");
+#endif
+
+            // About group (always last)
             xml.AppendLine($"        <group id=\"AboutGroup\" label=\"{E(about)}\">");
             xml.AppendLine($"          <labelControl id=\"VersionLabel\" label=\"{E(version)}\"/>");
             // Development / BETA mode tag (visible in debug builds, hidden in Release/MSI builds)
@@ -258,6 +288,16 @@ namespace Fuwoa.AddIn
             SortDescending = selectedId != "OrderAsc";
         }
 
+        public string GetDropDownSizeString(IRibbonControl control)
+        {
+            var lang = LanguageManager.Current;
+            if (lang == Language.zh_CN || lang == Language.zh_TW) return "WWWWWW";
+            if (lang == Language.ja) return "WWWWWWW";
+            if (lang == Language.de || lang == Language.ru) return "WWWWWWWW";
+            if (lang == Language.th) return "WWWWWWWWW";
+            return "WWWWWWW";
+        }
+
         // ── Language Dropdown ──
 
         public int GetLangSelectedIndex(IRibbonControl c)
@@ -318,6 +358,86 @@ namespace Fuwoa.AddIn
             }
             catch { }
         }
+
+#if !RELEASE
+        // ── Highlight Toggle ──
+
+        public string GetHighlightToggleLabel(IRibbonControl control)
+        {
+            try { return L("highlightToggle"); } catch { return "Highlight"; }
+        }
+
+        public bool GetHighlightTogglePressed(IRibbonControl control)
+        {
+            return _highlightManager?.Enabled ?? false;
+        }
+
+        public void OnHighlightToggleAction(IRibbonControl control, bool pressed)
+        {
+            if (pressed)
+                _highlightManager?.Enable();
+            else
+                _highlightManager?.Disable();
+        }
+
+        // ── Highlight Color Gallery ──
+
+        private static readonly int[] PresetColors =
+        {
+            0xE0FFFF, // Light Yellow
+            0xFFDCC8, // Light Blue (default)
+            0xE0FFE0, // Light Green
+            0xFFE0E0, // Light Pink
+            0xDDDDFF, // Light Purple
+            0xFFFFCC, // Pale Yellow
+            0xE8E8E8, // Light Gray
+            0x0000FF, // Red
+            0x0080FF, // Orange
+            0x00FFFF, // Yellow
+            0x00FF00, // Lime
+            0xFF0000, // Blue
+            0x800080, // Purple
+            0x800000, // Navy
+        };
+
+        public int GetHighlightColorItemCount(IRibbonControl control) => PresetColors.Length;
+
+        public string GetHighlightColorLabel(IRibbonControl control)
+        {
+            try { return L("highlightColor"); } catch { return "Color"; }
+        }
+
+        public object GetHighlightColorItemImage(IRibbonControl control, int index)
+        {
+            if (index < 0 || index >= PresetColors.Length) return null;
+            int ole = PresetColors[index];
+            var color = ColorTranslator.FromOle(ole);
+            var bmp = new Bitmap(16, 16);
+            try
+            {
+                using var g = Graphics.FromImage(bmp);
+                using var brush = new SolidBrush(color);
+                g.FillRectangle(brush, 0, 0, 16, 16);
+                using var pen = new Pen(Color.DarkGray);
+                g.DrawRectangle(pen, 0, 0, 15, 15);
+                return PictureDispConverter.FromBitmap(bmp);
+            }
+            catch { bmp.Dispose(); return null; }
+        }
+
+        public void OnHighlightColorAction(IRibbonControl control, string selectedId, int selectedIndex)
+        {
+            if (selectedIndex >= 0 && selectedIndex < PresetColors.Length && _highlightManager != null)
+                _highlightManager.HighlightColor = PresetColors[selectedIndex];
+        }
+
+        /// <summary>Bitmap → IPictureDisp 转换器（通过 AxHost 受保护方法）</summary>
+        private class PictureDispConverter : System.Windows.Forms.AxHost
+        {
+            private PictureDispConverter() : base("{00000000-0000-0000-0000-000000000000}") { }
+            public static object FromBitmap(Bitmap bmp) => GetIPictureDispFromPicture(bmp);
+        }
+#endif
 
         // ── Helpers ──
 

@@ -31,14 +31,14 @@ namespace Fuwoa.AddIn
                 ["about"] = "关于",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "语言",
-                ["langRestart"] = "按钮标签已即时更新；功能区和分组名称将在重启 Excel 后生效。",
+                ["langRestart"] = "部分翻译将在重启 Excel 后生效。",
                 ["count"] = "计数",
                 ["column"] = "列",
                 ["noExcelApp"] = "无法获取 Excel 应用程序实例。",
                 ["selectOneCell"] = "请选中某一列的标题单元格（单个单元格）。",
                 ["noDataBelow"] = "该列标题下方没有数据。",
                 ["exportFailed"] = "导出计数失败",
-                ["devTag"] = "当前是 BETA 测试版本",
+                ["devTag"] = "当前是 Tiger 的开发测试版本",
                 ["exportCountAll"] = "导出计数 (全部)",
                 ["exportCountFiltered"] = "导出计数 (已筛选)",
                 ["sortBy"] = "排序",
@@ -47,6 +47,8 @@ namespace Fuwoa.AddIn
                 ["sortOrder"] = "方向",
                 ["sortDesc"] = "降序",
                 ["sortAsc"] = "升序",
+                ["highlightToggle"] = "行列高亮",
+                ["highlightColor"] = "高亮颜色",
             },
             [Language.zh_TW] = new Dictionary<string, string>
             {
@@ -57,7 +59,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "關於",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "語言",
-                ["langRestart"] = "語言已切換為繁體中文，請重新啟動 Excel 使變更生效。",
+                ["langRestart"] = "部分翻譯將在重啟 Excel 後生效。",
                 ["count"] = "計數",
                 ["column"] = "欄",
                 ["noExcelApp"] = "無法取得 Excel 應用程式執行個體。",
@@ -72,7 +74,9 @@ namespace Fuwoa.AddIn
                 ["sortByTitle"] = "按標題",
                 ["sortOrder"] = "方向",
                 ["sortDesc"] = "降序",
-                ["sortAsc"] = "升序"
+                ["sortAsc"] = "升序",
+                ["visualTools"] = "視覺工具",
+                ["highlightToggle"] = "行列醒目提示",
             },
             [Language.en] = new Dictionary<string, string>
             {
@@ -83,7 +87,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "About",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "Language",
-                ["langRestart"] = "Button label updated instantly. Tab and group names will take effect after restarting Excel.",
+                ["langRestart"] = "Some translations require Excel restart.",
                 ["count"] = "Count",
                 ["column"] = "Col",
                 ["noExcelApp"] = "Unable to get Excel application instance.",
@@ -99,6 +103,9 @@ namespace Fuwoa.AddIn
                 ["sortOrder"] = "Order",
                 ["sortDesc"] = "Descending",
                 ["sortAsc"] = "Ascending",
+                ["visualTools"] = "Visual Tools",
+                ["highlightToggle"] = "Row/Col Highlight",
+                ["highlightColor"] = "Highlight Color",
             },
             [Language.de] = new Dictionary<string, string>
             {
@@ -109,7 +116,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "Über",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "Sprache",
-                ["langRestart"] = "Sprache auf Deutsch geändert. Bitte starten Sie Excel neu.",
+                ["langRestart"] = "Einige Übersetzungen erfordern einen Excel-Neustart.",
                 ["count"] = "Anzahl",
                 ["column"] = "Spalte",
                 ["noExcelApp"] = "Excel-Anwendungsinstanz kann nicht abgerufen werden.",
@@ -124,7 +131,10 @@ namespace Fuwoa.AddIn
                 ["sortByTitle"] = "Nach Titel",
                 ["sortOrder"] = "Reihenfolge",
                 ["sortDesc"] = "Absteigend",
-                ["sortAsc"] = "Aufsteigend"
+                ["sortAsc"] = "Aufsteigend",
+                ["visualTools"] = "Visuelle Werkzeuge",
+                ["highlightToggle"] = "Zeilen/Spalten hervorheben",
+                ["highlightColor"] = "Hervorhebungsfarbe"
             },
             [Language.fr] = new Dictionary<string, string>
             {
@@ -135,7 +145,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "À propos",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "Langue",
-                ["langRestart"] = "Libellé du bouton mis à jour instantanément. Les noms d'onglet et de groupe prendront effet après le redémarrage d'Excel.",
+                ["langRestart"] = "Certaines traductions nécessitent un redémarrage d'Excel.",
                 ["count"] = "Nombre",
                 ["column"] = "Colonne",
                 ["noExcelApp"] = "Impossible d'obtenir l'instance de l'application Excel.",
@@ -150,7 +160,10 @@ namespace Fuwoa.AddIn
                 ["sortByTitle"] = "Par titre",
                 ["sortOrder"] = "Ordre",
                 ["sortDesc"] = "Décroissant",
-                ["sortAsc"] = "Croissant"
+                ["sortAsc"] = "Croissant",
+                ["visualTools"] = "Outils visuels",
+                ["highlightToggle"] = "Surligner lignes/colonnes",
+                ["highlightColor"] = "Couleur de surbrillance"
             },
             [Language.ru] = new Dictionary<string, string>
             {
@@ -161,7 +174,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "О программе",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "Язык",
-                ["langRestart"] = "Язык изменён на русский. Перезапустите Excel.",
+                ["langRestart"] = "Часть перевода вступит в силу после перезапуска Excel.",
                 ["count"] = "Количество",
                 ["column"] = "Столбец",
                 ["noExcelApp"] = "Не удалось получить экземпляр приложения Excel.",
@@ -176,7 +189,9 @@ namespace Fuwoa.AddIn
                 ["sortByTitle"] = "По заголовку",
                 ["sortOrder"] = "Порядок",
                 ["sortDesc"] = "По убыванию",
-                ["sortAsc"] = "По возрастанию"
+                ["sortAsc"] = "По возрастанию",
+                ["highlightToggle"] = "Подсветка строк и столбцов",
+                ["highlightColor"] = "Цвет подсветки"
             },
             [Language.vi] = new Dictionary<string, string>
             {
@@ -187,7 +202,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "Giới thiệu",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "Ngôn ngữ",
-                ["langRestart"] = "Nhãn nút đã cập nhật ngay. Tên tab và nhóm sẽ có hiệu lực sau khi khởi động lại Excel.",
+                ["langRestart"] = "Một số bản dịch cần khởi động lại Excel.",
                 ["count"] = "Số lượng",
                 ["column"] = "Cột",
                 ["noExcelApp"] = "Không thể lấy phiên bản ứng dụng Excel.",
@@ -203,6 +218,9 @@ namespace Fuwoa.AddIn
                 ["sortOrder"] = "Thứ tự",
                 ["sortDesc"] = "Giảm dần",
                 ["sortAsc"] = "Tăng dần",
+                ["visualTools"] = "Công cụ trực quan",
+                ["highlightToggle"] = "Đánh dấu hàng/cột",
+                ["highlightColor"] = "Màu đánh dấu"
             },
             [Language.th] = new Dictionary<string, string>
             {
@@ -213,7 +231,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "เกี่ยวกับ",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "ภาษา",
-                ["langRestart"] = "ป้ายปุ่มอัปเดตทันที ชื่อแท็บและกลุ่มจะมีผลหลังจากรีสตาร์ท Excel",
+                ["langRestart"] = "การแปลบางส่วนจะมีผลหลังจากรีสตาร์ท Excel",
                 ["count"] = "จำนวน",
                 ["column"] = "คอลัมน์",
                 ["noExcelApp"] = "ไม่สามารถเข้าถึงอินสแตนซ์ของแอปพลิเคชัน Excel",
@@ -229,6 +247,9 @@ namespace Fuwoa.AddIn
                 ["sortOrder"] = "ลำดับ",
                 ["sortDesc"] = "มากไปน้อย",
                 ["sortAsc"] = "น้อยไปมาก",
+                ["visualTools"] = "เครื่องมือภาพ",
+                ["highlightToggle"] = "เน้นแถวและคอลัมน์",
+                ["highlightColor"] = "สีเน้น"
             },
             [Language.id] = new Dictionary<string, string>
             {
@@ -239,7 +260,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "Tentang",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "Bahasa",
-                ["langRestart"] = "Label tombol diperbarui langsung. Nama tab dan grup akan berlaku setelah memulai ulang Excel.",
+                ["langRestart"] = "Beberapa terjemahan perlu memulai ulang Excel.",
                 ["count"] = "Jumlah",
                 ["column"] = "Kolom",
                 ["noExcelApp"] = "Tidak dapat mengakses instans aplikasi Excel.",
@@ -255,6 +276,9 @@ namespace Fuwoa.AddIn
                 ["sortOrder"] = "Urutan",
                 ["sortDesc"] = "Menurun",
                 ["sortAsc"] = "Menaik",
+                ["visualTools"] = "Alat Visual",
+                ["highlightToggle"] = "Sorot Baris & Kolom",
+                ["highlightColor"] = "Warna Sorot"
             },
             [Language.bo] = new Dictionary<string, string>
             {
@@ -265,7 +289,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "སྐོར།",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "སྐད་ཡིག",
-                ["langRestart"] = "སྐད་ཡིག་བོད་སྐད་ལ་བསྒྱུར་ཟིན། ཡང་བསྐྱར་Excel བརྒྱུད་གཏོང་བྱེད་རོགས།",
+                ["langRestart"] = "སྒྱུར་བསྒྱུར་ཁ་ཤས་ Excel ཡང་བསྐྱར་བརྒྱུད་གཏོང་དགོས།",
                 ["count"] = "ཨང་གྲངས།",
                 ["column"] = "ཀ་རྟགས།",
                 ["noExcelApp"] = "Excel མཉེན་སྒྲིག་གི་དཔེ་མཚན་ལེན་མི་ཐུབ།",
@@ -281,6 +305,8 @@ namespace Fuwoa.AddIn
                 ["sortOrder"] = "གོ་རིམ།",
                 ["sortDesc"] = "ཡས་མས།",
                 ["sortAsc"] = "མས་ཡས།",
+                ["visualTools"] = "མིག་སྣང་ཡོ་བྱད།",
+                ["highlightToggle"] = "གྲལ་ཐིག་དང་ཀ་རྟགས་མངོན་གསལ།"
             },
             [Language.ug] = new Dictionary<string, string>
             {
@@ -291,7 +317,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "ھەققىدە",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "تىل",
-                ["langRestart"] = "تىل ئۇيغۇرچىگە ئۆزگەرتىلدى. Excel نى قايتا باشلاڭ.",
+                ["langRestart"] = "بەزى تەرجىمىلەر Excel نى قايتا باشلاشنى تەلەپ قىلىدۇ.",
                 ["count"] = "سان",
                 ["column"] = "ئىستون",
                 ["noExcelApp"] = "Excel پروگرامما ئىنستانسىغا ئېرىشەلمىدى.",
@@ -307,6 +333,9 @@ namespace Fuwoa.AddIn
                 ["sortOrder"] = "تەرتىپ",
                 ["sortDesc"] = "چۈشۈش",
                 ["sortAsc"] = "ئۆرلەش",
+                ["visualTools"] = "كۆرۈنۈش قوراللىرى",
+                ["highlightToggle"] = "قۇر ۋە ئىستوننى يورۇتۇش",
+                ["highlightColor"] = "يورۇتۇش رەڭگى"
             },
             [Language.ja] = new Dictionary<string, string>
             {
@@ -317,7 +346,7 @@ namespace Fuwoa.AddIn
                 ["about"] = "バージョン情報",
                 ["version"] = "FUWOA BETA",
                 ["language"] = "言語",
-                ["langRestart"] = "ボタンラベルは即時更新されました。タブとグループ名は Excel の再起動後に反映されます。",
+                ["langRestart"] = "一部の翻訳は Excel の再起動後に反映されます。",
                 ["count"] = "件数",
                 ["column"] = "列",
                 ["noExcelApp"] = "Excel アプリケーションのインスタンスを取得できません。",
@@ -333,6 +362,9 @@ namespace Fuwoa.AddIn
                 ["sortOrder"] = "順序",
                 ["sortDesc"] = "降順",
                 ["sortAsc"] = "昇順",
+                ["visualTools"] = "ビジュアルツール",
+                ["highlightToggle"] = "行列ハイライト",
+                ["highlightColor"] = "ハイライト色"
             },
         };
 
