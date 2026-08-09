@@ -1,0 +1,43 @@
+﻿# FUWOA 编译检查：每次 push / PR 自动跑 Debug + Release 双编译
+# 作用：防止“只测了 Debug，Release 一打包就报错”的问题。
+# 说明：CI 不生成正式 MSI（强名称私钥 Fuwoa.snk 不提交仓库，正式 MSI 在本地用 build_msi.bat 出包）。
+name: 编译检查
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: 编译 (${{ matrix.config }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [ Debug, Release ]
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      # 说明：
+      # - /p:SignAssembly=false  —— CI 没有私钥，跳过强名称签名（仅用于编译检查）
+      # - /p:VsIdePath=...      —— 本机默认找 VS 18 Community，GitHub 自带 VS 2022 Enterprise
+      - name: 编译 Fuwoa.Core
+        run: msbuild Fuwoa.Core\Fuwoa.Core.csproj /t:Build /p:Configuration=${{ matrix.config }} /p:Platform=x64 /p:SignAssembly=false /v:m
+
+      - name: 编译 Fuwoa.AddIn
+        run: msbuild Fuwoa.AddIn\Fuwoa.AddIn.csproj /t:Build /p:Configuration=${{ matrix.config }} /p:Platform=x64 /p:SignAssembly=false /p:VsIdePath="C:\Program Files\Microsoft Visual Studio\2022\Enterprise" /v:m
+
+      - name: 上传编译产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.config }}-x64
+          path: |
+            Fuwoa.AddIn\bin\${{ matrix.config }}\Fuwoa.AddIn.dll
+            Fuwoa.Core\bin\${{ matrix.config }}\Fuwoa.Core.dll
+          if-no-files-found: error

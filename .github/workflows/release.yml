@@ -1,0 +1,70 @@
+﻿# FUWOA 发布辅助：打 v* 标签时自动做两件事
+# 1) 云端双编译检查（确保发布状态可编译）
+# 2) 从 CHANGELOG 提取本版本说明，创建 GitHub Release 草稿
+# 注意：正式 MSI 需本地用 build_msi.bat 生成后拖入草稿附件（私钥不提交仓库，CI 无法签名出包）。
+name: 发布辅助
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+jobs:
+  check:
+    name: 发布前编译检查 (${{ matrix.config }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [ Debug, Release ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: 配置 MSBuild
+        uses: microsoft/setup-msbuild@v2
+      - name: 编译 Fuwoa.Core
+        run: msbuild Fuwoa.Core\Fuwoa.Core.csproj /t:Build /p:Configuration=${{ matrix.config }} /p:Platform=x64 /p:SignAssembly=false /v:m
+      - name: 编译 Fuwoa.AddIn
+        run: msbuild Fuwoa.AddIn\Fuwoa.AddIn.csproj /t:Build /p:Configuration=${{ matrix.config }} /p:Platform=x64 /p:SignAssembly=false /p:VsIdePath="C:\Program Files\Microsoft Visual Studio\2022\Enterprise" /v:m
+
+  release:
+    name: 创建 Release 草稿
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 从 CHANGELOG 提取本版本说明
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # 兼容 CHANGELOG 中 "1.0.2" 与 "1.0.2.0" 两种写法
+          awk -v v="$VERSION" '
+            /^## / {
+              line = $0
+              sub(/^## \[/, "", line)
+              sub(/\].*$/, "", line)
+              if (line == v || line == v ".0") { flag = 1; next }
+              if (flag) { exit }
+            }
+            flag { print }
+          ' CHANGELOG.md > /tmp/notes.md
+          if [ ! -s /tmp/notes.md ]; then
+            echo "（自动提取失败：CHANGELOG 中未找到 $VERSION 对应条目，请发布后手动补充说明）" > /tmp/notes.md
+          fi
+          echo "===== 提取到的说明 ====="
+          cat /tmp/notes.md
+
+      - name: 创建 Release 草稿（等待上传 MSI 后发布）
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="$GITHUB_REF_NAME"
+          {
+            echo ""
+            echo "---"
+            echo "> 待办：在本地执行 build_msi.bat 生成 dist\\FUWOA_${TAG#v}_x64.msi，"
+            echo "> 然后将 MSI 拖入本草稿附件并点击 Publish release。"
+          } >> /tmp/notes.md
+          gh release create "$TAG" --title "$TAG" --notes-file /tmp/notes.md --draft
