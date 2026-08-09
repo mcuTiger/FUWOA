@@ -6,10 +6,9 @@ FUWOA is a practical utility add-in for Excel.
 
 ## Features
 
-- **Single Column Count Export**: Select a header cell in any column and click to export all unique values and their occurrence counts in descending order to a new worksheet.
+- **Single Column Count Export**: Select a header cell in any column to export all unique values and their occurrence counts to a new worksheet. Supports sorting by count/title, ascending/descending order, and visible-rows-only mode when filtered. Optional percentage column.
+- **Split Worksheet by Column**: Split the source worksheet into multiple sheets based on values in a column.
 - **Visual Tools - Row and column highlighting**: Highlight the currently selected row and column, making it easier to navigate large datasets.
-
-More features are in the works.
 
 ## Supported Languages
 
