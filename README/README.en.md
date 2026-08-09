@@ -24,6 +24,12 @@ FUWOA is a practical utility add-in for Excel.
 - Microsoft Office 2016 / 2019 / 2021 / Microsoft 365 (desktop, x64)
 - .NET Framework 4.8
 
+> Download the installer from the [Releases](https://github.com/mcuTiger/FUWOA/releases) page.
+
+## Issues
+
+For bug reports or feature requests, please visit [GitHub Issues](https://github.com/mcuTiger/FUWOA/issues).
+
 ## About
 
 This project is licensed under [GNU General Public License v3.0](LICENSE).

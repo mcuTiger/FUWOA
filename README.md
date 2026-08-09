@@ -24,6 +24,12 @@ FUWOA 是一款适用于 Excel 的实用小工具。
 - Microsoft Office 2016 / 2019 / 2021 / Microsoft 365（桌面版，x64）
 - .NET Framework 4.8
 
+> 安装包请到 [Releases](https://github.com/mcuTiger/FUWOA/releases) 页面下载。
+
+## 问题反馈
+
+如有问题或建议，请通过 [GitHub Issues](https://github.com/mcuTiger/FUWOA/issues) 提交。
+
 ## 关于
 
 本项目由 [GNU General Public License v3.0](LICENSE) 授权。
