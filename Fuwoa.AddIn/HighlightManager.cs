@@ -1,4 +1,3 @@
-#if !RELEASE
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -419,4 +418,3 @@ namespace Fuwoa.AddIn
         }
     }
 }
-#endif

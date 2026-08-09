@@ -2,7 +2,8 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Package Name="FUWOA Excel Add-In"
            Manufacturer="FUWOA"
-           Version="1.0.2.0"
+           Version="$(var.ProductVersion)"
+           ProductCode="*"
            UpgradeCode="D4E5F6A7-B8C9-0D1E-F2A3-B4C5D6E7F8A9"
            Language="1033"
            InstallerVersion="200">
@@ -11,15 +12,19 @@
 
     <MediaTemplate EmbedCab="yes" />
 
+    <!-- 64-bit system check -->
+    <Launch Condition="VersionNT64" Message="FUWOA only supports 64-bit Windows. Please install on a 64-bit system." />
+
     <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="FUWOA">
         <Component Id="AddInDll" Guid="A1B2C3D4-E5F6-7890-ABCD-EF1234567890">
-          <File Source="..\Fuwoa.AddIn\bin\Release\Fuwoa.AddIn.dll" KeyPath="yes" />
-          <File Source="..\Fuwoa.AddIn\bin\Release\Fuwoa.Core.dll" />
-          <File Source="Registration.cmd" />
+          <File Id="FuwoaAddInDll" Source="..\Fuwoa.AddIn\bin\Release\Fuwoa.AddIn.dll" KeyPath="yes" />
+          <File Id="FuwoaCoreDll" Source="..\Fuwoa.Core\bin\Release\Fuwoa.Core.dll" />
         </Component>
+
+        <!-- Load behavior in HKLM (non-16.0 path), consistent with plugin code -->
         <Component Id="RegistryEntries" Guid="B2C3D4E5-F6A7-8901-BCDE-F12345678901">
-          <RegistryKey Root="HKCU" Key="SOFTWARE\Microsoft\Office\Excel\Addins\Fuwoa.AddIn">
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Office\Excel\Addins\Fuwoa.AddIn">
             <RegistryValue Name="Description" Value="FUWOA Excel Add-In" Type="string" />
             <RegistryValue Name="FriendlyName" Value="FUWOA" Type="string" />
             <RegistryValue Name="LoadBehavior" Value="3" Type="integer" />
@@ -29,12 +34,31 @@
       </Directory>
     </StandardDirectory>
 
+    <!-- COM registration via RegAsm (deferred, system context) -->
+    <CustomAction Id="RegisterCom"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="&quot;[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe&quot; &quot;[INSTALLFOLDER]Fuwoa.AddIn.dll&quot; /codebase /nologo"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="check" />
+
+    <!-- COM unregistration before file removal -->
+    <CustomAction Id="UnregisterCom"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="&quot;[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe&quot; /unregister &quot;[INSTALLFOLDER]Fuwoa.AddIn.dll&quot; /nologo"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="check" />
+
+    <InstallExecuteSequence>
+      <Custom Action="RegisterCom" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="UnregisterCom" Before="RemoveFiles" Condition="REMOVE=&quot;ALL&quot;" />
+    </InstallExecuteSequence>
+
     <Feature Id="MainFeature" Title="FUWOA Add-In" Level="1">
       <ComponentRef Id="AddInDll" />
       <ComponentRef Id="RegistryEntries" />
     </Feature>
-
-
 
   </Package>
 </Wix>

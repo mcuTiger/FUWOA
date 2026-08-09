@@ -28,9 +28,7 @@ namespace Fuwoa.AddIn
         private static bool _sortDescLoaded;
         private static bool _showPercentage;
         private static bool _showPerLoaded;
-#if !RELEASE
         private HighlightManager _highlightManager;
-#endif
 
         private static SortMode SortMode
         {
@@ -133,9 +131,7 @@ namespace Fuwoa.AddIn
         public void OnDisconnection(ext_DisconnectMode removeMode, ref Array custom)
         {
             StopFilterWatcher();
-#if !RELEASE
             _highlightManager?.Disable();
-#endif
             _ribbonUI = null;
             _applicationObject = null;
         }
@@ -145,9 +141,7 @@ namespace Fuwoa.AddIn
         public void OnStartupComplete(ref Array custom)
         {
             StartFilterWatcher();
-#if !RELEASE
             _highlightManager = new HighlightManager(_applicationObject as Excel.Application);
-#endif
         }
 
         public void OnBeginShutdown(ref Array custom)
@@ -214,7 +208,6 @@ namespace Fuwoa.AddIn
             xml.AppendLine( "                  size=\"large\"/>");
             xml.AppendLine( "        </group>");
 
-#if !RELEASE
             // Visual Tools group
             xml.AppendLine($"        <group id=\"HighlightGroup\" label=\"{E(L("visualTools"))}\">");
             xml.AppendLine($"          <toggleButton id=\"HighlightToggle\"");
@@ -232,7 +225,6 @@ namespace Fuwoa.AddIn
             xml.AppendLine( "                       itemWidth=\"20\"");
             xml.AppendLine( "                       itemHeight=\"20\"/>");
             xml.AppendLine( "        </group>");
-#endif
 
             // About group (always last)
             xml.AppendLine($"        <group id=\"AboutGroup\" label=\"{E(about)}\">");
@@ -449,7 +441,6 @@ namespace Fuwoa.AddIn
             catch { }
         }
 
-#if !RELEASE
         // ── Highlight Toggle ──
 
         public string GetHighlightToggleLabel(IRibbonControl control)
@@ -533,7 +524,6 @@ namespace Fuwoa.AddIn
             private PictureDispConverter() : base("{00000000-0000-0000-0000-000000000000}") { }
             public static object FromBitmap(Bitmap bmp) => GetIPictureDispFromPicture(bmp);
         }
-#endif
 
         // ── Helpers ──
 
