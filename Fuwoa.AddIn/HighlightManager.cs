@@ -1,5 +1,6 @@
 #if !RELEASE
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Win32;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -27,6 +28,8 @@ namespace Fuwoa.AddIn
         private bool _enabled;
         private int _highlightColor;
         private Excel.Worksheet _activeSheet;
+        private readonly HashSet<Excel.Worksheet> _formattedSheets = new HashSet<Excel.Worksheet>();
+        private Excel.Range _appliedRange;
 
         public HighlightManager(Excel.Application app)
         {
@@ -83,6 +86,8 @@ namespace Fuwoa.AddIn
             RemoveAllFormats();
             RemoveNamedRanges();
             _activeSheet = null;
+            _appliedRange = null;
+            _formattedSheets.Clear();
         }
 
         // ── Events ──
@@ -171,6 +176,33 @@ namespace Fuwoa.AddIn
         private void UpdateNamedRangesFromSelection(Excel.Worksheet sheet, Excel.Range selection)
         {
             if (selection == null || sheet == null) return;
+
+            // 选区超出当前条件格式范围时，扩展并重新应用
+            if (_appliedRange != null)
+            {
+                try
+                {
+                    int selRowMin = int.MaxValue, selRowMax = 0, selColMin = int.MaxValue, selColMax = 0;
+                    foreach (Excel.Range area in selection.Areas)
+                    {
+                        if (area.Row < selRowMin) selRowMin = area.Row;
+                        int r2 = area.Row + area.Rows.Count - 1;
+                        if (r2 > selRowMax) selRowMax = r2;
+                        if (area.Column < selColMin) selColMin = area.Column;
+                        int c2 = area.Column + area.Columns.Count - 1;
+                        if (c2 > selColMax) selColMax = c2;
+                    }
+                    if (selRowMin < _appliedRange.Row ||
+                        selRowMax > _appliedRange.Row + _appliedRange.Rows.Count - 1 ||
+                        selColMin < _appliedRange.Column ||
+                        selColMax > _appliedRange.Column + _appliedRange.Columns.Count - 1)
+                    {
+                        RemoveFormatsFromSheet(sheet);
+                        ApplyFormats(sheet);
+                    }
+                }
+                catch { }
+            }
 
             try
             {
@@ -263,8 +295,7 @@ namespace Fuwoa.AddIn
         {
             try
             {
-                // 全表应用条件格式，避免选中数据区外单元格时被 UsedRange 裁剪
-                var rng = sheet.Cells;
+                var rng = GetCfRange(sheet, _app.Selection as Excel.Range);
                 var fcs = rng.FormatConditions;
                 int color = _highlightColor;
                 foreach (var formula in CfFormulas)
@@ -276,7 +307,9 @@ namespace Fuwoa.AddIn
                     fc.Interior.Color = color;
                     fc.StopIfTrue = false;
                 }
+                _appliedRange = rng;
                 _activeSheet = sheet;
+                _formattedSheets.Add(sheet);
             }
             catch { }
         }
@@ -300,16 +333,14 @@ namespace Fuwoa.AddIn
                 }
             }
             catch { }
+            _formattedSheets.Remove(sheet);
         }
 
         private void RemoveAllFormats()
         {
-            try
-            {
-                foreach (Excel.Worksheet sheet in _app.Worksheets)
-                    RemoveFormatsFromSheet(sheet);
-            }
-            catch { }
+            var sheets = new List<Excel.Worksheet>(_formattedSheets);
+            foreach (var sheet in sheets)
+                RemoveFormatsFromSheet(sheet);
             RemoveFormatsFromSheet(_activeSheet);
         }
 
@@ -332,6 +363,32 @@ namespace Fuwoa.AddIn
                 }
             }
             catch { }
+        }
+
+        private Excel.Range GetCfRange(Excel.Worksheet sheet, Excel.Range selection)
+        {
+            int r1 = 1, r2 = sheet.Rows.Count, c1 = 1, c2 = sheet.Columns.Count;
+            try
+            {
+                var used = sheet.UsedRange;
+                if (used != null)
+                {
+                    const int margin = 100;
+                    r1 = Math.Max(1, used.Row - margin);
+                    r2 = Math.Min(sheet.Rows.Count, used.Row + used.Rows.Count - 1 + margin);
+                    c1 = Math.Max(1, used.Column - margin);
+                    c2 = Math.Min(sheet.Columns.Count, used.Column + used.Columns.Count - 1 + margin);
+                }
+            }
+            catch { }
+            if (selection != null)
+            {
+                r1 = Math.Min(r1, selection.Row);
+                r2 = Math.Max(r2, selection.Row + selection.Rows.Count - 1);
+                c1 = Math.Min(c1, selection.Column);
+                c2 = Math.Max(c2, selection.Column + selection.Columns.Count - 1);
+            }
+            return sheet.Range[sheet.Cells[r1, c1], sheet.Cells[r2, c2]];
         }
 
         // ── Registry ──

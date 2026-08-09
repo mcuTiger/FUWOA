@@ -50,6 +50,15 @@ namespace Fuwoa.AddIn
                 ["visualTools"] = "视觉工具",
                 ["highlightToggle"] = "行列高亮",
                 ["highlightColor"] = "高亮颜色",
+                ["percentageColumn"] = "占比",
+                ["showPercentage"] = "百分比",
+                ["splitByColumn"] = "导出分类",
+                ["splitByColumnScreentip"] = "按选定列的分类值导出筛选结果",
+                ["splitByColumnSupertip"] = "选中某一列的标题单元格，点击按该列唯一值拆分为多个工作表。",
+                ["splitFailed"] = "导出分类失败",
+                ["splitByColumnAll"] = "导出分类 (全部)",
+                ["splitByColumnFiltered"] = "导出分类 (已筛选)",
+                ["emptyCategory"] = "（空）",
             },
             [Language.zh_TW] = new Dictionary<string, string>
             {
@@ -78,6 +87,15 @@ namespace Fuwoa.AddIn
                 ["sortAsc"] = "升序",
                 ["visualTools"] = "視覺工具",
                 ["highlightToggle"] = "行列醒目提示",
+                ["percentageColumn"] = "佔比",
+                ["showPercentage"] = "百分比",
+                ["splitByColumn"] = "导出分类",
+                ["splitByColumnScreentip"] = "按選定列的分類值匯出篩選結果",
+                ["splitByColumnSupertip"] = "選取某一欄的標題儲存格，點擊按該欄唯一值拆分為多個工作表。",
+                ["splitFailed"] = "匯出分類失敗",
+                ["splitByColumnAll"] = "匯出分類 (全部)",
+                ["splitByColumnFiltered"] = "匯出分類 (已篩選)",
+                ["emptyCategory"] = "（空）",
             },
             [Language.en] = new Dictionary<string, string>
             {
@@ -107,6 +125,15 @@ namespace Fuwoa.AddIn
                 ["visualTools"] = "Visual Tools",
                 ["highlightToggle"] = "Row/Col Highlight",
                 ["highlightColor"] = "Highlight Color",
+                ["percentageColumn"] = "Percentage",
+                ["showPercentage"] = "Show %",
+                ["splitByColumn"] = "Split by Column",
+                ["splitByColumnScreentip"] = "Split data into worksheets by unique values in selected column",
+                ["splitByColumnSupertip"] = "Select a header cell, then click to split the data into multiple worksheets by unique values in that column. Each worksheet contains all rows matching that value.",
+                ["splitFailed"] = "Export by Category Failed",
+                ["splitByColumnAll"] = "Export by Cat. (All)",
+                ["splitByColumnFiltered"] = "Export by Cat. (Filtered)",
+                ["emptyCategory"] = "(empty)",
             },
             [Language.de] = new Dictionary<string, string>
             {
@@ -135,8 +162,17 @@ namespace Fuwoa.AddIn
                 ["sortAsc"] = "Aufsteigend",
                 ["visualTools"] = "Visuelle Werkzeuge",
                 ["highlightToggle"] = "Zeilen/Spalten hervorheben",
-                ["highlightColor"] = "Hervorhebungsfarbe"
-            },
+                ["highlightColor"] = "Hervorhebungsfarbe",
+                ["percentageColumn"] = "Anteil",
+                ["showPercentage"] = "% anzeigen",
+                            ["splitByColumn"] = "Nach Spalte aufteilen",
+                ["splitByColumnScreentip"] = "Daten nach eindeutigen Werten in der ausgewählten Spalte aufteilen",
+                ["splitByColumnSupertip"] = "Wählen Sie eine Kopfzelle und klicken Sie, um die Daten nach eindeutigen Werten dieser Spalte in mehrere Arbeitsblätter aufzuteilen. Jedes Blatt enthält alle Zeilen mit diesem Wert.",
+                ["splitFailed"] = "Aufteilung fehlgeschlagen",
+                ["splitByColumnAll"] = "Nach Kat. exp. (Alle)",
+                ["splitByColumnFiltered"] = "Nach Kat. exp. (Gefiltert)",
+                ["emptyCategory"] = "(leer)",
+},
             [Language.fr] = new Dictionary<string, string>
             {
                 ["exportCount"] = "Exporter le décompte",
@@ -164,8 +200,17 @@ namespace Fuwoa.AddIn
                 ["sortAsc"] = "Croissant",
                 ["visualTools"] = "Outils visuels",
                 ["highlightToggle"] = "Surligner lignes/colonnes",
-                ["highlightColor"] = "Couleur de surbrillance"
-            },
+                ["highlightColor"] = "Couleur de surbrillance",
+                ["percentageColumn"] = "Pourcentage",
+                ["showPercentage"] = "Afficher %",
+                            ["splitByColumn"] = "Diviser par colonne",
+                ["splitByColumnScreentip"] = "Diviser les données en feuilles selon les valeurs uniques de la colonne sélectionnée",
+                ["splitByColumnSupertip"] = "Sélectionnez une cellule d'en-tête, puis cliquez pour diviser les données en plusieurs feuilles selon les valeurs uniques de cette colonne. Chaque feuille contient toutes les lignes correspondant à cette valeur.",
+                ["splitFailed"] = "Échec de l'export par catégorie",
+                ["splitByColumnAll"] = "Export par cat. (Tout)",
+                ["splitByColumnFiltered"] = "Export par cat. (Filtré)",
+                ["emptyCategory"] = "(vide)",
+},
             [Language.ru] = new Dictionary<string, string>
             {
                 ["exportCount"] = "Экспорт подсчёта",
@@ -193,8 +238,17 @@ namespace Fuwoa.AddIn
                 ["sortAsc"] = "По возрастанию",
                 ["highlightToggle"] = "Подсветка строк и столбцов",
                 ["visualTools"] = "Визуальные инструменты",
-                ["highlightColor"] = "Цвет подсветки"
-            },
+                ["highlightColor"] = "Цвет подсветки",
+                ["percentageColumn"] = "Доля",
+                ["showPercentage"] = "Показать %",
+                            ["splitByColumn"] = "Разделить по столбцу",
+                ["splitByColumnScreentip"] = "Разделить данные на листы по уникальным значениям выбранного столбца",
+                ["splitByColumnSupertip"] = "Выберите ячейку заголовка и нажмите, чтобы разделить данные на несколько листов по уникальным значениям этого столбца. Каждый лист содержит все строки с этим значением.",
+                ["splitFailed"] = "Ошибка экспорта",
+                ["splitByColumnAll"] = "Экспорт (Все)",
+                ["splitByColumnFiltered"] = "Экспорт (Фильтр)",
+                ["emptyCategory"] = "(пусто)",
+},
             [Language.vi] = new Dictionary<string, string>
             {
                 ["exportCount"] = "Xuất thống kê",
@@ -222,8 +276,17 @@ namespace Fuwoa.AddIn
                 ["sortAsc"] = "Tăng dần",
                 ["visualTools"] = "Công cụ trực quan",
                 ["highlightToggle"] = "Đánh dấu hàng/cột",
-                ["highlightColor"] = "Màu đánh dấu"
-            },
+                ["highlightColor"] = "Màu đánh dấu",
+                ["percentageColumn"] = "Tỷ lệ",
+                ["showPercentage"] = "Hiển thị %",
+                            ["splitByColumn"] = "Chia theo cột",
+                ["splitByColumnScreentip"] = "Chia dữ liệu thành các sheet theo giá trị duy nhất trong cột đã chọn",
+                ["splitByColumnSupertip"] = "Chọn một ô tiêu đề, sau đó nhấn để chia dữ liệu thành nhiều sheet theo giá trị duy nhất trong cột đó. Mỗi sheet chứa tất cả các hàng khớp với giá trị đó.",
+                ["splitFailed"] = "Xuất theo danh mục thất bại",
+                ["splitByColumnAll"] = "Xuất DM (Tất cả)",
+                ["splitByColumnFiltered"] = "Xuất DM (Đã lọc)",
+                ["emptyCategory"] = "(trống)",
+},
             [Language.th] = new Dictionary<string, string>
             {
                 ["exportCount"] = "ส่งออกจำนวน",
@@ -251,8 +314,17 @@ namespace Fuwoa.AddIn
                 ["sortAsc"] = "น้อยไปมาก",
                 ["visualTools"] = "เครื่องมือภาพ",
                 ["highlightToggle"] = "เน้นแถวและคอลัมน์",
-                ["highlightColor"] = "สีเน้น"
-            },
+                ["highlightColor"] = "สีเน้น",
+                ["percentageColumn"] = "สัดส่วน",
+                ["showPercentage"] = "แสดง %",
+                            ["splitByColumn"] = "แยกตามคอลัมน์",
+                ["splitByColumnScreentip"] = "แยกข้อมูลเป็นแผ่นงานตามค่าที่ไม่ซ้ำในคอลัมน์ที่เลือก",
+                ["splitByColumnSupertip"] = "เลือกเซลล์ส่วนหัว จากนั้นคลิกเพื่อแยกข้อมูลเป็นหลายแผ่นงานตามค่าที่ไม่ซ้ำในคอลัมน์นั้น แต่ละแผ่นงานมีแถวทั้งหมดที่ตรงกับค่านั้น",
+                ["splitFailed"] = "การส่งออกตามหมวดหมู่ล้มเหลว",
+                ["splitByColumnAll"] = "ส่งออก (ทั้งหมด)",
+                ["splitByColumnFiltered"] = "ส่งออก (กรองแล้ว)",
+                ["emptyCategory"] = "(ว่าง)",
+},
             [Language.id] = new Dictionary<string, string>
             {
                 ["exportCount"] = "Ekspor Hitungan",
@@ -280,8 +352,17 @@ namespace Fuwoa.AddIn
                 ["sortAsc"] = "Menaik",
                 ["visualTools"] = "Alat Visual",
                 ["highlightToggle"] = "Sorot Baris & Kolom",
-                ["highlightColor"] = "Warna Sorot"
-            },
+                ["highlightColor"] = "Warna Sorot",
+                ["percentageColumn"] = "Persentase",
+                ["showPercentage"] = "Tampilkan %",
+                            ["splitByColumn"] = "Pisah per Kolom",
+                ["splitByColumnScreentip"] = "Pisahkan data menjadi lembar kerja berdasarkan nilai unik di kolom terpilih",
+                ["splitByColumnSupertip"] = "Pilih sel judul, lalu klik untuk memisahkan data menjadi beberapa lembar kerja berdasarkan nilai unik di kolom tersebut. Setiap lembar berisi semua baris yang cocok dengan nilai tersebut.",
+                ["splitFailed"] = "Ekspor per Kategori Gagal",
+                ["splitByColumnAll"] = "Ekspor Kat. (Semua)",
+                ["splitByColumnFiltered"] = "Ekspor Kat. (Difilter)",
+                ["emptyCategory"] = "(kosong)",
+},
             [Language.bo] = new Dictionary<string, string>
             {
                 ["exportCount"] = "ཨང་གྲངས་ཕྱིར་འདོན།",
@@ -308,8 +389,17 @@ namespace Fuwoa.AddIn
                 ["sortDesc"] = "ཡས་མས།",
                 ["sortAsc"] = "མས་ཡས།",
                 ["visualTools"] = "མིག་སྣང་ཡོ་བྱད།",
-                ["highlightToggle"] = "གྲལ་ཐིག་དང་ཀ་རྟགས་མངོན་གསལ།"
-            },
+                ["highlightToggle"] = "གྲལ་ཐིག་དང་ཀ་རྟགས་མངོན་གསལ།",
+                ["percentageColumn"] = "བརྒྱ་ཆ།",
+                ["showPercentage"] = "བརྒྱ་ཆ་སྟོན།",
+                            ["splitByColumn"] = "ཀ་རྟགས་ལྟར་ཁ་བགོས།",
+                ["splitByColumnScreentip"] = "འདེམས་པའི་ཀ་རྟགས་ཀྱི་མ་འདྲ་བའི་གྲངས་ཐང་ལྟར་གཞི་གྲངས་ཁ་བགོས།",
+                ["splitByColumnSupertip"] = "མགོ་ཡིག་དྲ་ཐིག་ཅིག་འདེམས་རོགས། རྗེས་སུ་ཀ་རྟགས་དེའི་མ་འདྲ་བའི་གྲངས་ཐང་ལྟར་གཞི་གྲངས་བྱང་བུ་དུ་མར་ཁ་བགོས་བྱེད། བྱང་བུ་རེ་རེར་གྲངས་ཐང་དེ་དང་མཐུན་པའི་གྲལ་ཐིག་ཚང་མ་ཡོད།",
+                ["splitFailed"] = "ཀ་རྟགས་ལྟར་ཁ་བགོས་ལས་འཆར་མ་བྱུང་།",
+                ["splitByColumnAll"] = "",
+                ["splitByColumnFiltered"] = "",
+                ["emptyCategory"] = "（སྟོང་པ།）",
+},
             [Language.ug] = new Dictionary<string, string>
             {
                 ["exportCount"] = "ساناق چىقىرىش",
@@ -337,8 +427,17 @@ namespace Fuwoa.AddIn
                 ["sortAsc"] = "ئۆرلەش",
                 ["visualTools"] = "كۆرۈنۈش قوراللىرى",
                 ["highlightToggle"] = "قۇر ۋە ئىستوننى يورۇتۇش",
-                ["highlightColor"] = "يورۇتۇش رەڭگى"
-            },
+                ["highlightColor"] = "يورۇتۇش رەڭگى",
+                ["percentageColumn"] = "پىرسەنت",
+                ["showPercentage"] = "پىرسەنت كۆرسەت",
+                            ["splitByColumn"] = "ئىستون بويىچە ئايرىش",
+                ["splitByColumnScreentip"] = "تاللانغان ئىستوندىكى تەكرارلانمىغان قىممەتلەر بويىچە سانلىق مەلۇماتنى ۋاراقلارغا ئايرىش",
+                ["splitByColumnSupertip"] = "ماۋزۇ كاتەكچىنى تاللاڭ، ئاندىن چېكىپ سانلىق مەلۇماتنى شۇ ئىستوندىكى تەكرارلانمىغان قىممەتلەر بويىچە كۆپ ۋاراققا ئايرىڭ. ھەر بىر ۋاراقتا شۇ قىممەتكە ماس كېلىدىغان بارلىق قۇرلار بار.",
+                ["splitFailed"] = "ئىستون بويىچە ئايرىش مەغلۇپ بولدى",
+                ["splitByColumnAll"] = "",
+                ["splitByColumnFiltered"] = "",
+                ["emptyCategory"] = "（بوش）",
+},
             [Language.ja] = new Dictionary<string, string>
             {
                 ["exportCount"] = "カウント出力",
@@ -366,8 +465,17 @@ namespace Fuwoa.AddIn
                 ["sortAsc"] = "昇順",
                 ["visualTools"] = "ビジュアルツール",
                 ["highlightToggle"] = "行列ハイライト",
-                ["highlightColor"] = "ハイライト色"
-            },
+                ["highlightColor"] = "ハイライト色",
+                ["percentageColumn"] = "割合",
+                ["showPercentage"] = "%表示",
+                            ["splitByColumn"] = "列で分割",
+                ["splitByColumnScreentip"] = "選択した列のユニーク値でデータを複数シートに分割",
+                ["splitByColumnSupertip"] = "ヘッダーセルを選択し、クリックするとその列のユニーク値ごとにデータを複数のシートに分割します。各シートにはその値に一致するすべての行が含まれます。",
+                ["splitFailed"] = "カテゴリ別エクスポートに失敗しました",
+                ["splitByColumnAll"] = "カテゴリ別出力 (すべて)",
+                ["splitByColumnFiltered"] = "カテゴリ別出力 (抽出)",
+                ["emptyCategory"] = "（空）",
+},
         };
 
         public static Language Current

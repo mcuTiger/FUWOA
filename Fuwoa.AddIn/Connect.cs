@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -20,10 +21,13 @@ namespace Fuwoa.AddIn
         private IRibbonUI _ribbonUI;
         private Timer _filterTimer;
         private bool _lastFilterMode;
+        private Excel.AppEvents_SheetActivateEventHandler _sheetActivateHandler;
         private static SortMode _sortMode;
         private static bool _sortModeLoaded;
         private static bool _sortDescending = true;
         private static bool _sortDescLoaded;
+        private static bool _showPercentage;
+        private static bool _showPerLoaded;
 #if !RELEASE
         private HighlightManager _highlightManager;
 #endif
@@ -89,6 +93,36 @@ namespace Fuwoa.AddIn
             }
         }
 
+        private static bool ShowPercentage
+        {
+            get
+            {
+                if (!_showPerLoaded)
+                {
+                    _showPerLoaded = true;
+                    try
+                    {
+                        using var key = Microsoft.Win32.Registry.CurrentUser
+                            .OpenSubKey(@"SOFTWARE\Microsoft\Office\Excel\Addins\Fuwoa.AddIn");
+                        _showPercentage = (key?.GetValue("ShowPercentage") as int? ?? 0) != 0;
+                    }
+                    catch { _showPercentage = false; }
+                }
+                return _showPercentage;
+            }
+            set
+            {
+                _showPercentage = value;
+                try
+                {
+                    using var key = Microsoft.Win32.Registry.CurrentUser
+                        .CreateSubKey(@"SOFTWARE\Microsoft\Office\Excel\Addins\Fuwoa.AddIn");
+                    key.SetValue("ShowPercentage", value ? 1 : 0);
+                }
+                catch { }
+            }
+        }
+
         public void OnConnection(object application, ext_ConnectMode connectMode,
             object addInInst, ref Array custom)
         {
@@ -147,6 +181,7 @@ namespace Fuwoa.AddIn
             xml.AppendLine( "                  onAction=\"OnExportCountClick\"");
             xml.AppendLine( "                  imageMso=\"CreateReportFromWizard\"");
             xml.AppendLine( "                  size=\"large\"/>");
+            xml.AppendLine($"          <box id=\"SortBox\" boxStyle=\"vertical\">");
             xml.AppendLine($"          <dropDown id=\"SortDropDown\"");
             xml.AppendLine($"                    label=\"{E(L("sortBy"))}\"");
             xml.AppendLine( "                    sizeString=\"WWWWWWW\"");
@@ -163,6 +198,20 @@ namespace Fuwoa.AddIn
             xml.AppendLine($"            <item id=\"OrderDesc\" label=\"{E(L("sortDesc"))}\"/>");
             xml.AppendLine($"            <item id=\"OrderAsc\"  label=\"{E(L("sortAsc"))}\"/>");
             xml.AppendLine( "          </dropDown>");
+            xml.AppendLine($"          <toggleButton id=\"PercentageToggle\"");
+            xml.AppendLine( "                       getLabel=\"GetPercentageToggleLabel\"");
+            xml.AppendLine( "                       getPressed=\"GetPercentageTogglePressed\"");
+            xml.AppendLine( "                       onAction=\"OnPercentageToggleAction\"");
+            xml.AppendLine( "                       imageMso=\"PercentStyle\"/>");
+            xml.AppendLine( "          </box>");
+            xml.AppendLine($"          <separator id=\"ExportSep\"/>");
+            xml.AppendLine($"          <button id=\"SplitByColumnBtn\"");
+            xml.AppendLine( "                  getLabel=\"GetSplitByColumnLabel\"");
+            xml.AppendLine($"                  screentip=\"{E(L("splitByColumnScreentip"))}\"");
+            xml.AppendLine($"                  supertip=\"{E(L("splitByColumnSupertip"))}\"");
+            xml.AppendLine( "                  onAction=\"OnSplitByColumnClick\"");
+            xml.AppendLine( "                  imageMso=\"GroupField\"");
+            xml.AppendLine( "                  size=\"large\"/>");
             xml.AppendLine( "        </group>");
 
 #if !RELEASE
@@ -241,7 +290,30 @@ namespace Fuwoa.AddIn
         public void OnExportCountClick(IRibbonControl control)
         {
             var command = new Commands.ExportCountCommand();
-            command.Execute(_applicationObject as Excel.Application, SortMode, SortDescending);
+            command.Execute(_applicationObject as Excel.Application, SortMode, SortDescending, ShowPercentage);
+        }
+
+        public void OnSplitByColumnClick(IRibbonControl control)
+        {
+            var command = new Commands.SplitByColumnCommand();
+            command.Execute(_applicationObject as Excel.Application);
+        }
+
+        public string GetSplitByColumnLabel(IRibbonControl control)
+        {
+            try
+            {
+                var app = _applicationObject as Excel.Application;
+                var sheet = app?.ActiveSheet as Excel.Worksheet;
+                if (sheet != null && sheet.AutoFilterMode)
+                {
+                    var filter = sheet.AutoFilter;
+                    if (filter != null && filter.FilterMode)
+                        return L("splitByColumnFiltered");
+                }
+            }
+            catch { }
+            return L("splitByColumnAll");
         }
 
         public string GetExportCountLabel(IRibbonControl control)
@@ -286,6 +358,24 @@ namespace Fuwoa.AddIn
             string selectedId, int selectedIndex)
         {
             SortDescending = selectedId != "OrderAsc";
+        }
+
+        // ── Percentage Toggle ──
+
+        public bool GetPercentageTogglePressed(IRibbonControl control)
+        {
+            return ShowPercentage;
+        }
+
+        public void OnPercentageToggleAction(IRibbonControl control, bool pressed)
+        {
+            ShowPercentage = pressed;
+        }
+
+        public string GetPercentageToggleLabel(IRibbonControl control)
+        {
+            try { return L("showPercentage"); }
+            catch { return "%"; }
         }
 
         public string GetDropDownSizeString(IRibbonControl control)
@@ -382,6 +472,9 @@ namespace Fuwoa.AddIn
 
         // ── Highlight Color Gallery ──
 
+        private static readonly Dictionary<int, object> ColorImageCache =
+            new Dictionary<int, object>();
+
         private static readonly int[] PresetColors =
         {
             0xE0FFFF, // Light Yellow
@@ -411,6 +504,7 @@ namespace Fuwoa.AddIn
         {
             if (index < 0 || index >= PresetColors.Length) return null;
             int ole = PresetColors[index];
+            if (ColorImageCache.TryGetValue(ole, out var cached)) return cached;
             var color = ColorTranslator.FromOle(ole);
             var bmp = new Bitmap(16, 16);
             try
@@ -420,7 +514,9 @@ namespace Fuwoa.AddIn
                 g.FillRectangle(brush, 0, 0, 16, 16);
                 using var pen = new Pen(Color.DarkGray);
                 g.DrawRectangle(pen, 0, 0, 15, 15);
-                return PictureDispConverter.FromBitmap(bmp);
+                var pic = PictureDispConverter.FromBitmap(bmp);
+                ColorImageCache[ole] = pic;
+                return pic;
             }
             catch { bmp.Dispose(); return null; }
         }
@@ -477,6 +573,7 @@ namespace Fuwoa.AddIn
                         {
                             _lastFilterMode = current;
                             _ribbonUI?.InvalidateControl("ExportCountBtn");
+                            _ribbonUI?.InvalidateControl("SplitByColumnBtn");
                         }
                     }
                     catch { }
@@ -487,10 +584,12 @@ namespace Fuwoa.AddIn
                 var app2 = _applicationObject as Excel.Application;
                 if (app2 != null)
                 {
-                    app2.SheetActivate += (object sh) =>
+                    _sheetActivateHandler = sh =>
                     {
                         _ribbonUI?.InvalidateControl("ExportCountBtn");
+                        _ribbonUI?.InvalidateControl("SplitByColumnBtn");
                     };
+                    app2.SheetActivate += _sheetActivateHandler;
                 }
             }
             catch { }
@@ -505,6 +604,11 @@ namespace Fuwoa.AddIn
                 _filterTimer = null;
             }
             catch { }
+            if (_applicationObject is Excel.Application app && _sheetActivateHandler != null)
+            {
+                try { app.SheetActivate -= _sheetActivateHandler; } catch { }
+                _sheetActivateHandler = null;
+            }
         }
     }
 }

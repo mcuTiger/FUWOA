@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,14 +37,15 @@ namespace Fuwoa.Core.ExportCount
                 .GroupBy(x => x)
                 .Select(g => new CountResultItem { Value = g.Key, Count = g.Count() });
 
+            var cmp = StringComparer.CurrentCulture;
             if (sortMode == SortMode.ByTitle)
                 return descending
-                    ? groups.OrderByDescending(x => x.Value).ToList()
-                    : groups.OrderBy(x => x.Value).ToList();
+                    ? groups.OrderByDescending(x => x.Value, cmp).ThenByDescending(x => x.Count).ToList()
+                    : groups.OrderBy(x => x.Value, cmp).ThenBy(x => x.Count).ToList();
             else
                 return descending
-                    ? groups.OrderByDescending(x => x.Count).ToList()
-                    : groups.OrderBy(x => x.Count).ToList();
+                    ? groups.OrderByDescending(x => x.Count).ThenBy(x => x.Value, cmp).ToList()
+                    : groups.OrderBy(x => x.Count).ThenBy(x => x.Value, cmp).ToList();
         }
     }
 }

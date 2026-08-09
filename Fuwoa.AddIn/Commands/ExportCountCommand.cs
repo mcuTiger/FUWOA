@@ -11,7 +11,7 @@ namespace Fuwoa.AddIn.Commands
     public class ExportCountCommand
     {
         public void Execute(Excel.Application app, SortMode sortMode = SortMode.ByCount,
-            bool descending = true)
+            bool descending = true, bool showPercentage = false)
         {
             try
             {
@@ -36,127 +36,156 @@ namespace Fuwoa.AddIn.Commands
                     return;
                 }
 
-                Excel.Worksheet sourceSheet = selection.Worksheet;
-                int headerRow = selection.Row;
-                int columnIndex = selection.Column;
-
-                // 读取真正的标题文本（选中的标题单元格）
-                string headerText = sourceSheet.Cells[headerRow, columnIndex].Text?.ToString();
-                if (string.IsNullOrWhiteSpace(headerText))
+                using (new ExcelGuard(app))
                 {
-                    headerText = LanguageManager.Get("column") + columnIndex;
-                }
+                    Excel.Worksheet sourceSheet = selection.Worksheet;
+                    int headerRow = selection.Row;
+                    int columnIndex = selection.Column;
 
-                // 读取该列从标题行下一行开始到末尾的所有数据
-                int lastRow = sourceSheet.Cells[sourceSheet.Rows.Count, columnIndex]
-                    .End[Excel.XlDirection.xlUp].Row;
+                    string headerText = sourceSheet.Cells[headerRow, columnIndex].Text?.ToString();
+                    if (string.IsNullOrWhiteSpace(headerText))
+                    {
+                        headerText = LanguageManager.Get("column") + columnIndex;
+                    }
 
-                if (lastRow <= headerRow)
-                {
-                    MessageBox.Show(
-                        LanguageManager.Get("noDataBelow"),
-                        "FUWOA",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    return;
-                }
+                    int lastRow = sourceSheet.Cells[sourceSheet.Rows.Count, columnIndex]
+                        .End[Excel.XlDirection.xlUp].Row;
 
-                int dataStartRow = headerRow + 1;
-                int dataRowCount = lastRow - dataStartRow + 1;
+                    if (lastRow <= headerRow)
+                    {
+                        MessageBox.Show(
+                            LanguageManager.Get("noDataBelow"),
+                            "FUWOA",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+                        return;
+                    }
 
-                // 检测筛选状态
-                bool isFiltered = sourceSheet.AutoFilterMode &&
-                                  sourceSheet.AutoFilter != null &&
-                                  sourceSheet.AutoFilter.FilterMode;
+                    int dataStartRow = headerRow + 1;
 
-                // 读取数据（用 Text 属性保留原始显示格式，避免 01-06 被截断）
-                var items = new System.Collections.Generic.List<string>();
-                if (isFiltered)
-                {
-                    // 仅读取可见行
+                    bool isFiltered = sourceSheet.AutoFilterMode &&
+                                      sourceSheet.AutoFilter != null &&
+                                      sourceSheet.AutoFilter.FilterMode;
+
                     var dataRange = sourceSheet.Range[
                         sourceSheet.Cells[dataStartRow, columnIndex],
                         sourceSheet.Cells[lastRow, columnIndex]];
-                    var visibleAreas = dataRange.SpecialCells(
-                        Excel.XlCellType.xlCellTypeVisible);
-                    foreach (Excel.Range area in visibleAreas.Areas)
+
+                    var items = new System.Collections.Generic.List<string>();
+
+                    if (isFiltered)
                     {
-                        foreach (Excel.Range cell in area.Cells)
+                        Excel.Range visible;
+                        try
                         {
-                            items.Add(cell.Text?.ToString() ?? string.Empty);
+                            visible = dataRange.SpecialCells(Excel.XlCellType.xlCellTypeVisible);
+                        }
+                        catch
+                        {
+                            MessageBox.Show(LanguageManager.Get("noDataBelow"), "FUWOA",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+                        foreach (Excel.Range area in visible.Areas)
+                        {
+                            object raw = area.Value2;
+                            if (raw is object[,] arr)
+                            {
+                                for (int i = 1; i <= arr.GetLength(0); i++)
+                                    items.Add(arr[i, 1]?.ToString() ?? "");
+                            }
+                            else
+                            {
+                                items.Add(raw?.ToString() ?? "");
+                            }
                         }
                     }
-                }
-                else
-                {
-                    for (int i = 0; i < dataRowCount; i++)
+                    else
                     {
-                        items.Add(sourceSheet.Cells[dataStartRow + i, columnIndex].Text?.ToString()
-                                   ?? string.Empty);
-                    }
-                }
-
-                // 调用核心服务
-                var service = new ExportCountService();
-                var result = service.Compute(items.ToArray(), sortMode, descending);
-
-                // 创建新工作表
-                Excel.Worksheet newSheet = (Excel.Worksheet)app.Worksheets.Add(
-                    Type.Missing, sourceSheet, Type.Missing, Type.Missing);
-
-                // 重命名为 "标题计数"（如 "管理编号计数"）
-                string sheetName = headerText + LanguageManager.Get("count");
-                // Excel 工作表名最长 31 字符，且不能含 [ ] / * ? : \
-                sheetName = sheetName
-                    .Replace("[", "").Replace("]", "").Replace("/", "-")
-                    .Replace("*", "").Replace("?", "").Replace(":", "：")
-                    .Replace("\\", "-");
-                if (sheetName.Length > 31) sheetName = sheetName.Substring(0, 31);
-
-                // 重名时加序号后缀，避免覆盖用户已标注的旧表
-                string finalName = sheetName;
-                var existingNames = new System.Collections.Generic.HashSet<string>(
-                    StringComparer.OrdinalIgnoreCase);
-                foreach (Excel.Worksheet ws in app.Worksheets)
-                    existingNames.Add(ws.Name);
-
-                if (existingNames.Contains(sheetName))
-                {
-                    for (int n = 2; n <= 999; n++)
-                    {
-                        string suffix = string.Format(" ({0})", n);
-                        int suffixLen = suffix.Length;
-                        string candidate = sheetName;
-                        if (candidate.Length + suffixLen > 31)
-                            candidate = candidate.Substring(0, 31 - suffixLen);
-                        candidate += suffix;
-                        if (!existingNames.Contains(candidate))
+                        object raw = dataRange.Value2;
+                        if (raw is object[,] arr)
                         {
-                            finalName = candidate;
-                            break;
+                            for (int i = 1; i <= arr.GetLength(0); i++)
+                                items.Add(arr[i, 1]?.ToString() ?? "");
+                        }
+                        else
+                        {
+                            items.Add(raw?.ToString() ?? "");
                         }
                     }
+
+                    var service = new ExportCountService();
+                    var result = service.Compute(items.ToArray(), sortMode, descending);
+
+                    Excel.Worksheet newSheet = (Excel.Worksheet)app.Worksheets.Add(
+                        Type.Missing, sourceSheet, Type.Missing, Type.Missing);
+
+                    string sheetName = headerText + LanguageManager.Get("count");
+                    sheetName = sheetName
+                        .Replace("[", "").Replace("]", "").Replace("/", "-")
+                        .Replace("*", "").Replace("?", "").Replace(":", "：")
+                        .Replace("\\", "-");
+                    if (sheetName.Length > 31) sheetName = sheetName.Substring(0, 31);
+
+                    string finalName = sheetName;
+                    var existingNames = new System.Collections.Generic.HashSet<string>(
+                        StringComparer.OrdinalIgnoreCase);
+                    foreach (Excel.Worksheet ws in app.Worksheets)
+                        existingNames.Add(ws.Name);
+
+                    if (existingNames.Contains(sheetName))
+                    {
+                        for (int n = 2; n <= 999; n++)
+                        {
+                            string suffix = string.Format(" ({0})", n);
+                            int suffixLen = suffix.Length;
+                            string candidate = sheetName;
+                            if (candidate.Length + suffixLen > 31)
+                                candidate = candidate.Substring(0, 31 - suffixLen);
+                            candidate += suffix;
+                            if (!existingNames.Contains(candidate))
+                            {
+                                finalName = candidate;
+                                break;
+                            }
+                        }
+                    }
+                    newSheet.Name = finalName;
+
+                    newSheet.Range["A:A"].NumberFormat = "@";
+
+                    int cols = showPercentage ? 3 : 2;
+                    var block = new object[result.Count + 1, cols];
+                    block[0, 0] = headerText;
+                    block[0, 1] = LanguageManager.Get("count");
+                    if (showPercentage)
+                        block[0, 2] = LanguageManager.Get("percentageColumn");
+
+                    int totalCount = 0;
+                    for (int i = 0; i < result.Count; i++)
+                    {
+                        block[i + 1, 0] = result[i].Value;
+                        block[i + 1, 1] = result[i].Count;
+                        totalCount += result[i].Count;
+                    }
+                    if (showPercentage && totalCount > 0)
+                    {
+                        newSheet.Columns["C"].NumberFormat = "0.0%";
+                        newSheet.Columns["C"].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                        for (int i = 0; i < result.Count; i++)
+                            block[i + 1, 2] = (double)result[i].Count / totalCount;
+                    }
+
+                    var target = newSheet.Range[
+                        newSheet.Cells[1, 1],
+                        newSheet.Cells[result.Count + 1, cols]];
+                    target.Value2 = block;
+
+                    newSheet.Range["A1:B1"].Font.Bold = true;
+                    if (showPercentage) newSheet.Cells[1, 3].Font.Bold = true;
+                    newSheet.Columns[showPercentage ? "A:C" : "A:B"].AutoFit();
+                    newSheet.Activate();
                 }
-                newSheet.Name = finalName;
-
-                // 设置 A 列为文本格式，防止 Excel 自动格式化（如 01-06 → 1-6）
-                newSheet.Range["A:A"].NumberFormat = "@";
-
-                // 写入表头
-                newSheet.Cells[1, 1].Value = headerText;
-                newSheet.Cells[1, 2].Value = LanguageManager.Get("count");
-                newSheet.Range["A1:B1"].Font.Bold = true;
-
-                // 写入结果（A 列已设为文本格式，B 列为数字）
-                for (int i = 0; i < result.Count; i++)
-                {
-                    newSheet.Cells[i + 2, 1].Value = result[i].Value;
-                    newSheet.Cells[i + 2, 2].Value2 = result[i].Count;
-                }
-
-                // 自动调整列宽并激活
-                newSheet.Columns["A:B"].AutoFit();
-                newSheet.Activate();
             }
             catch (Exception ex)
             {

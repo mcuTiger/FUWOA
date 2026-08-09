@@ -58,9 +58,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="ExcelGuard.cs" />
     <Compile Include="LanguageManager.cs" />
     <Compile Include="HighlightManager.cs" />
     <Compile Include="Commands\ExportCountCommand.cs" />
+    <Compile Include="Commands\SplitByColumnCommand.cs" />
     <Compile Include="Connect.cs" />
     <Compile Include="..\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
