@@ -10,6 +10,34 @@ FUWOA is a practical utility add-in for Excel.
 - **Split Worksheet by Column**: Split the source worksheet into multiple sheets based on values in a column.
 - **Visual Tools - Row and column highlighting**: Highlight the currently selected row and column, making it easier to navigate large datasets.
 
+## Screenshots
+
+### Export Count
+
+| Ribbon · All | Ribbon · Filtered |
+| :-: | :-: |
+| ![Export Count ribbon - All](../docs/images/en/ribbon-exportcount-all.png) | ![Export Count ribbon - Filtered](../docs/images/en/ribbon-exportcount-filtered.png) |
+
+| Result · All data | Result · Filtered data |
+| :-: | :-: |
+| ![Export Count result - All](../docs/images/en/result-exportcount-all.png) | ![Export Count result - Filtered](../docs/images/en/result-exportcount-filtered.png) |
+
+Exporting multiple times creates separate worksheets and can be repeated:
+
+![Repeated export](../docs/images/en/result-exportcount-repeat.png)
+
+### Split by Column
+
+| Ribbon | Result · Detail data | Result · Category summary |
+| :-: | :-: | :-: |
+| ![Split by Column ribbon](../docs/images/en/ribbon-split.png) | ![Split result - detail](../docs/images/en/result-split-detail.png) | ![Split result - summary](../docs/images/en/result-split-summary.png) |
+
+### Row/Col Highlight
+
+| Ribbon | Demo |
+| :-: | :-: |
+| ![Row/Col Highlight ribbon](../docs/images/en/ribbon-highlight.png) | ![Row/Col Highlight demo](../docs/images/en/result-highlight.png) |
+
 ## Supported Languages
 
 12 languages:

@@ -1,8 +1,4 @@
-﻿# FUWOA 开发指导（供 CODE AGENT 使用）
-
-> 用途：指导 AI 代理（CODE AGENT）在 FUWOA 项目上安全、正确地开发。
-> 使用方式：本文件即仓库根目录的 `AGENTS.md`，Agent 进入仓库会自动读取；派任务时也可主动附上。
-> 源项目：`C:\Users\Kevin\Documents\FUWOA`。
+﻿# FUWOA 开发指导（AI AGENT 使用）
 
 ## 0. 项目一句话
 
@@ -65,6 +61,7 @@ msbuild Fuwoa.sln /t:Build /p:Configuration=Release /p:Platform=x64
 - [ ] 涉及文案时：12 种语言补齐
 - [ ] 边界自查：空值、筛选态、单行/单列、重名、31 字符表名、合并单元格、异常路径
 - [ ] 汇报中列出：改动文件清单、关键决策、**行为差异**（如 `.Text→Value2`、排序并列顺序）、未验证项
+- [ ] 有功能/行为变化时，同步更新 CHANGELOG.md（无对应版本条目则新建，格式照旧）
 - [ ] 未触碰第 4 节禁止项
 
 ## 6. 任务执行流程（Agent 必须按此顺序）
@@ -92,6 +89,7 @@ msbuild Fuwoa.sln /t:Build /p:Configuration=Release /p:Platform=x64
 - **提交**：一次任务一个提交；信息格式 `类型: 简述`（如 `perf: 导出计数改为批量读写`、`fix: 分类表激活顺序`、`feat: 新增xx`、`docs: ...`），并注明行为差异。
 - **提交前自查**：`git status` 确认没有 `bin/ obj/ .vs/ dist/ *.msi *.log` 混入。
 - **版本 tag**：`v<主>.<次>.<修订>`（如 `v1.0.2`），与 `AssemblyVersion`、MSI 版本对应。
+- **发版前**：先扫描 GitHub Issues，把待处理用户反馈整理成任务清单；已修复内容记入 CHANGELOG 对应版本。
 
 ## 9. 参考文档
 
