@@ -5,6 +5,11 @@ All notable changes to FUWOA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Markdown table import** — Parse Markdown tables from a .md file or the clipboard; pick one or more in a dialog, each written to its own new worksheet with bold headers and auto-fitted columns. 12 languages supported.
+
 ## [1.0.2.0] - 2026-08-10
 
 ### Changed

@@ -5,6 +5,11 @@ FUWOA 所有重要变更均记录于此文件。
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [Unreleased]
+
+### 新增
+- **Markdown 表格导入** — 从 .md 文件或剪贴板解析 Markdown 表格，弹窗勾选后可多选，每个表格写入独立的新工作表；表头加粗、自动列宽。支持 12 语言。
+
 ## [1.0.2.0] - 2026-08-10
 
 ### 变更

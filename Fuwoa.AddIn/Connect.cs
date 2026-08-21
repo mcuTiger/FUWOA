@@ -206,6 +206,21 @@ namespace Fuwoa.AddIn
             xml.AppendLine( "                  onAction=\"OnSplitByColumnClick\"");
             xml.AppendLine( "                  imageMso=\"GroupField\"");
             xml.AppendLine( "                  size=\"large\"/>");
+            xml.AppendLine($"          <menu id=\"MarkdownImportMenu\"");
+            xml.AppendLine( "                  getLabel=\"GetMarkdownImportLabel\"");
+            xml.AppendLine($"                  screentip=\"{E(L("mdImportScreentip"))}\"");
+            xml.AppendLine($"                  supertip=\"{E(L("mdImportSupertip"))}\"");
+            xml.AppendLine( "                  imageMso=\"PasteAsNestedTable\"");
+            xml.AppendLine( "                  size=\"large\">");
+            xml.AppendLine($"            <button id=\"MdImportFileBtn\"");
+            xml.AppendLine( "                    label=\"" + E(L("mdImportFile")) + "\"");
+            xml.AppendLine( "                    onAction=\"OnMdImportFileClick\"");
+            xml.AppendLine( "                    imageMso=\"OpenFile\"/>");
+            xml.AppendLine($"            <button id=\"MdImportClipboardBtn\"");
+            xml.AppendLine( "                    label=\"" + E(L("mdImportClipboard")) + "\"");
+            xml.AppendLine( "                    onAction=\"OnMdImportClipboardClick\"");
+            xml.AppendLine( "                    imageMso=\"Copy\"/>");
+            xml.AppendLine( "          </menu>");
             xml.AppendLine( "        </group>");
 
             // Visual Tools group
@@ -289,6 +304,26 @@ namespace Fuwoa.AddIn
         {
             var command = new Commands.SplitByColumnCommand();
             command.Execute(_applicationObject as Excel.Application);
+        }
+
+        // ── Markdown Import ──
+
+        public string GetMarkdownImportLabel(IRibbonControl control)
+        {
+            try { return L("mdImport"); }
+            catch { return "Markdown Import"; }
+        }
+
+        public void OnMdImportFileClick(IRibbonControl control)
+        {
+            var command = new Commands.MarkdownImportCommand();
+            command.Execute(_applicationObject as Excel.Application, Commands.MarkdownImportSource.File);
+        }
+
+        public void OnMdImportClipboardClick(IRibbonControl control)
+        {
+            var command = new Commands.MarkdownImportCommand();
+            command.Execute(_applicationObject as Excel.Application, Commands.MarkdownImportSource.Clipboard);
         }
 
         public string GetSplitByColumnLabel(IRibbonControl control)
